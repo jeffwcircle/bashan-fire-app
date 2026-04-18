@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTruckTemplates } from "@/data/useTruckTemplates";
+import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
   const { templates, setTemplates } = useTruckTemplates();
