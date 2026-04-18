@@ -26,7 +26,7 @@ export default function Home() {
       <h1 style={{ textAlign: "center" }}>Fire Department Dashboard</h1>
 
       <div style={containerStyle}>
-        <div onClick={() => router.push("/maintenance")}>
+        <div style={cardStyle} onClick={() => router.push("/maintenance")}>
           🛠️ Maintenance Logs
         </div>
 
