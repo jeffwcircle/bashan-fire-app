@@ -41,6 +41,11 @@ export default function Home() {
         <div style={cardStyle} onClick={() => router.push("/tracker")}>
           👨‍🚒 Status Tracker
         </div>
+
+        <div style={cardStyle} onClick={() => router.push("/admin")}>
+          👨‍🚒 Admin
+        </div>
+
       </div>
     </div>
   );

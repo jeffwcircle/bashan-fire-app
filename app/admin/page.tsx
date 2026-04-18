@@ -14,6 +14,8 @@ export default function AdminPage() {
 
   const update = (data: any) => setTemplates(data);
 
+  <button onClick={() => router.push("/")}>⬅ Back</button>
+
   // CREATE TRUCK
   const addTruck = () => {
     if (!newTruck) return;
