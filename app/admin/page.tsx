@@ -5,6 +5,8 @@ import { useTruckTemplates } from "@/data/useTruckTemplates";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
+  const router = useRouter();
+
   const { templates, setTemplates } = useTruckTemplates();
 
   const [selectedTruck, setSelectedTruck] = useState("");
