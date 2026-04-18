@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter();
 
-  const cardStyle = {
+  const cardStyle: React.CSSProperties = {
     background: "white",
     padding: "20px",
     borderRadius: "10px",
