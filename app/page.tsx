@@ -1,43 +1,47 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [status, setStatus] = useState('')
+  const router = useRouter();
 
-  const updateStatus = async (newStatus: string) => {
-    setStatus(newStatus)
+  const cardStyle = {
+    background: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    textAlign: "center"
+  };
 
-    await supabase.from('firefighter_status').insert([
-      {
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      },
-    ])
-  }
+  const containerStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "20px",
+    padding: "20px"
+  };
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Firefighter Tracker
-      </h1>
+    <div>
+      <h1 style={{ textAlign: "center" }}>Fire Department Dashboard</h1>
 
-      <div className="grid gap-2">
-        <button onClick={() => updateStatus('Responding to Station')} className="bg-blue-500 text-white p-3 rounded">
-          Responding to Station
-        </button>
+      <div style={containerStyle}>
+        <div style={cardStyle} onClick={() => router.push("/maintenance")}>
+          🛠️ Maintenance Logs
+        </div>
 
-        <button onClick={() => updateStatus('Responding to Scene')} className="bg-red-500 text-white p-3 rounded">
-          Responding to Scene
-        </button>
+        <div style={cardStyle} onClick={() => router.push("/training")}>
+          📘 Training Logs
+        </div>
 
-        <button onClick={() => updateStatus('Not Available')} className="bg-gray-500 text-white p-3 rounded">
-          Not Available
-        </button>
+        <div style={cardStyle} onClick={() => router.push("/truckcheck")}>
+          🚒 Truck Check Logs
+        </div>
+
+        <div style={cardStyle} onClick={() => router.push("/tracker")}>
+          👨‍🚒 Status Tracker
+        </div>
       </div>
-
-      <p className="mt-4">Current Status: {status}</p>
-    </main>
-  )
+    </div>
+  );
 }
