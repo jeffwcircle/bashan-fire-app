@@ -1,7 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { useTruckTemplates } from "@/data/useTruckTemplates";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 type Status = "X" | "Pass" | "Fail";
 
@@ -24,7 +24,9 @@ type LogEntry = {
 };
 
 export default function TruckCheck() {
-  const { templates } = useTruckTemplates();
+console.log("🚒 TruckCheck page loaded");
+
+  const [templates, setTemplates] = useState<any>({});
 
   const truckNames = Object.keys(templates);
 
@@ -45,6 +47,26 @@ export default function TruckCheck() {
     if (saved) setLogs(JSON.parse(saved));
   }, []);
 
+useEffect(() => {
+  console.log("🔥 Connecting to Firebase...");
+
+  const unsub = onSnapshot(collection(db, "truckTemplates"), (snapshot) => {
+    console.log("🔥 Snapshot received");
+
+    const data: any = {};
+
+    snapshot.forEach(doc => {
+      console.log("DOC:", doc.id);
+      data[doc.id] = doc.data();
+    });
+
+    console.log("TEMPLATES:", data);
+
+    setTemplates(data);
+  });
+
+  return () => unsub();
+}, []);
   // -----------------------------
   // LOAD TEMPLATE FROM ADMIN
   // -----------------------------
@@ -53,12 +75,14 @@ export default function TruckCheck() {
 
     const template = templates[truck];
 
+    console.log("SELECTED TEMPLATE:", template);
+
     if (!template) {
       setBays([]);
       return;
     }
 
-    const copy: Bay[] = template.bays.map(bay => ({
+    const copy: Bay[] = (template.bays || []).map(bay => ({
       name: bay.name,
       items: bay.items.map(item => ({
         name: item.name,
