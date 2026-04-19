@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import { useRouter } from 'next/navigation'
 
 type Status = "X" | "Pass" | "Fail";
 
@@ -24,7 +25,7 @@ type LogEntry = {
 };
 
 export default function TruckCheck() {
-console.log("🚒 TruckCheck page loaded");
+  console.log("🚒 TruckCheck page loaded");
 
   const [templates, setTemplates] = useState<any>({});
 
@@ -40,6 +41,8 @@ console.log("🚒 TruckCheck page loaded");
   const [editingLogId, setEditingLogId] = useState<number | null>(null);
   const [editBays, setEditBays] = useState<Bay[]>([]);
   const [editNotes, setEditNotes] = useState("");
+
+  const router = useRouter();
 
   // Load logs
   useEffect(() => {
@@ -216,7 +219,9 @@ useEffect(() => {
   // UI
   // -----------------------------
   return (
+
     <div style={{ padding: 20 }}>
+      <button onClick={() => router.push("/")}>⬅ Back</button>
       <h1>🚒 Truck Check System</h1>
 
       {/* TRUCK SELECT */}
