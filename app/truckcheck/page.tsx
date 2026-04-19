@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { useRouter } from 'next/navigation'
+
 
 type Status = "X" | "Pass" | "Fail";
 
@@ -46,8 +47,16 @@ export default function TruckCheck() {
 
   // Load logs
   useEffect(() => {
-    const saved = localStorage.getItem("truckLogs");
-    if (saved) setLogs(JSON.parse(saved));
+    const unsub = onSnapshot(collection(db, "truckLogs"), (snapshot) => {
+      const data: LogEntry[] = snapshot.docs.map(doc => ({
+        id: Number(doc.id),
+        ...doc.data()
+      })) as LogEntry[];
+
+      setLogs(data.sort((a, b) => b.id - a.id));
+    });
+
+    return () => unsub();
   }, []);
 
 useEffect(() => {
@@ -120,7 +129,7 @@ useEffect(() => {
   // -----------------------------
   // SUBMIT LOG
   // -----------------------------
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
 
     if (!selectedTruck) {
@@ -154,10 +163,7 @@ useEffect(() => {
       notes
     };
 
-    const updated = [newLog, ...logs];
-
-    setLogs(updated);
-    localStorage.setItem("truckLogs", JSON.stringify(updated));
+    await addDoc(collection(db, "truckLogs"), newLog);
 
     setSelectedTruck("");
     setBays([]);

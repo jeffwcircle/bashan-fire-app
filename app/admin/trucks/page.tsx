@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { useRouter } from 'next/navigation'
-
-
 import {
   collection,
   doc,
@@ -13,11 +10,11 @@ import {
   deleteDoc
 } from "firebase/firestore";
 
-type EquipmentItem = { name: string };
+type Item = { name: string };
 
 type Bay = {
   name: string;
-  items: EquipmentItem[];
+  items: Item[];
 };
 
 type Truck = {
@@ -25,18 +22,16 @@ type Truck = {
   bays: Bay[];
 };
 
-export default function AdminPage() {
+export default function TruckAdmin() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
-  const [newTruckName, setNewTruckName] = useState("");
+  const [newTruck, setNewTruck] = useState("");
 
-  const router = useRouter();
-
-  // LOAD TRUCKS
+  // ---------------- LOAD ----------------
   useEffect(() => {
-    loadTrucks();
+    load();
   }, []);
 
-  const loadTrucks = async () => {
+  const load = async () => {
     const snap = await getDocs(collection(db, "truckTemplates"));
 
     const data: Truck[] = snap.docs.map((d) => ({
@@ -47,35 +42,63 @@ export default function AdminPage() {
     setTrucks(data);
   };
 
-  // CREATE TRUCK
+  // ---------------- CREATE TRUCK ----------------
   const createTruck = async () => {
-    if (!newTruckName) return;
+    if (!newTruck) return;
 
-    await setDoc(doc(db, "truckTemplates", newTruckName), {
+    await setDoc(doc(db, "truckTemplates", newTruck), {
       bays: []
     });
 
-    setNewTruckName("");
-    loadTrucks();
+    setNewTruck("");
+    load();
   };
 
-  // ADD BAY
+  // ---------------- ADD BAY ----------------
   const addBay = async (truckId: string) => {
     const truck = trucks.find(t => t.id === truckId);
     if (!truck) return;
 
-    const updated = {
-      bays: [
-        ...truck.bays,
-        { name: "New Bay", items: [] }
-      ]
+    const updated: Truck = {
+      ...truck,
+      bays: [...(truck.bays || []), { name: "New Bay", items: [] }]
     };
 
     await setDoc(doc(db, "truckTemplates", truckId), updated);
-    loadTrucks();
+    load();
   };
 
-  // ADD ITEM
+  // ---------------- RENAME BAY ----------------
+  const renameBay = async (truckId: string, index: number, name: string) => {
+    const truck = trucks.find(t => t.id === truckId);
+    if (!truck) return;
+
+    const bays = [...truck.bays];
+    bays[index].name = name;
+
+    await setDoc(doc(db, "truckTemplates", truckId), {
+      bays
+    });
+
+    load();
+  };
+
+  // ---------------- DELETE BAY ----------------
+  const deleteBay = async (truckId: string, bayIndex: number) => {
+    const truck = trucks.find(t => t.id === truckId);
+    if (!truck) return;
+
+    const bays = [...truck.bays];
+    bays.splice(bayIndex, 1);
+
+    await setDoc(doc(db, "truckTemplates", truckId), {
+      bays
+    });
+
+    load();
+  };
+
+  // ---------------- ADD ITEM ----------------
   const addItem = async (truckId: string, bayIndex: number) => {
     const truck = trucks.find(t => t.id === truckId);
     if (!truck) return;
@@ -87,34 +110,76 @@ export default function AdminPage() {
       bays
     });
 
-    loadTrucks();
+    load();
   };
 
-  // DELETE TRUCK
-  const deleteTruck = async (truckId: string) => {
-    await deleteDoc(doc(db, "truckTemplates", truckId));
-    loadTrucks();
+  // ---------------- RENAME ITEM ----------------
+  const renameItem = async (
+    truckId: string,
+    bayIndex: number,
+    itemIndex: number,
+    name: string
+  ) => {
+    const truck = trucks.find(t => t.id === truckId);
+    if (!truck) return;
+
+    const bays = [...truck.bays];
+    bays[bayIndex].items[itemIndex].name = name;
+
+    await setDoc(doc(db, "truckTemplates", truckId), {
+      bays
+    });
+
+    load();
   };
 
+  // ---------------- DELETE ITEM ----------------
+  const deleteItem = async (
+    truckId: string,
+    bayIndex: number,
+    itemIndex: number
+  ) => {
+    const truck = trucks.find(t => t.id === truckId);
+    if (!truck) return;
+
+    const bays = [...truck.bays];
+    bays[bayIndex].items.splice(itemIndex, 1);
+
+    await setDoc(doc(db, "truckTemplates", truckId), {
+      bays
+    });
+
+    load();
+  };
+
+  // ---------------- DELETE TRUCK ----------------
+  const deleteTruck = async (id: string) => {
+    await deleteDoc(doc(db, "truckTemplates", id));
+    load();
+  };
+
+  // ---------------- UI ----------------
   return (
     <div style={{ padding: 20 }}>
-      <button onClick={() => router.push("/")}>⬅ Back</button>
-      <h1>🛠️ Truck Admin Panel</h1>
+      <h1>🚒 Truck Admin</h1>
+
       {/* CREATE TRUCK */}
       <div style={{ marginBottom: 20 }}>
         <input
+          value={newTruck}
           placeholder="New Truck Name"
-          value={newTruckName}
-          onChange={(e) => setNewTruckName(e.target.value)}
+          onChange={(e) => setNewTruck(e.target.value)}
         />
-        <button onClick={createTruck}>Create Truck</button>
+        <button onClick={createTruck}>Create</button>
       </div>
 
       {/* TRUCK LIST */}
       {trucks.map(truck => (
-        <div key={truck.id} style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}>
+        <div key={truck.id} style={{ border: "1px solid #ccc", marginBottom: 15, padding: 10 }}>
+          
+          {/* HEADER */}
           <h3>
-            {truck.id}
+            🚒 {truck.id}
             <button onClick={() => deleteTruck(truck.id)} style={{ marginLeft: 10, color: "red" }}>
               Delete Truck
             </button>
@@ -127,18 +192,47 @@ export default function AdminPage() {
           {/* BAYS */}
           {truck.bays?.map((bay, bIndex) => (
             <div key={bIndex} style={{ marginLeft: 20, marginTop: 10 }}>
-              <strong>{bay.name}</strong>
+              
+              <input
+                value={bay.name}
+                onChange={(e) =>
+                  renameBay(truck.id, bIndex, e.target.value)
+                }
+              />
 
               <button onClick={() => addItem(truck.id, bIndex)} style={{ marginLeft: 10 }}>
                 + Add Item
               </button>
 
+              <button
+                onClick={() => deleteBay(truck.id, bIndex)}
+                style={{ marginLeft: 10, color: "red" }}
+              >
+                Delete Bay
+              </button>
+
               {/* ITEMS */}
               {bay.items?.map((item, iIndex) => (
-                <div key={iIndex} style={{ marginLeft: 20 }}>
-                  • {item.name}
+                <div
+                  key={iIndex}
+                  style={{ marginLeft: 20, display: "flex", alignItems: "center" }}
+                >
+                  <input
+                    value={item.name}
+                    onChange={(e) =>
+                      renameItem(truck.id, bIndex, iIndex, e.target.value)
+                    }
+                  />
+
+                  <button
+                    onClick={() => deleteItem(truck.id, bIndex, iIndex)}
+                    style={{ marginLeft: 10, color: "red" }}
+                  >
+                    Delete
+                  </button>
                 </div>
               ))}
+
             </div>
           ))}
         </div>
