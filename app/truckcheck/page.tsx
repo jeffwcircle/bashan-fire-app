@@ -82,7 +82,7 @@ useEffect(() => {
       return;
     }
 
-    const copy: Bay[] = (template.bays || []).map(bay: Bay => ({
+    const copy: Bay[] = (template.bays || []).map((bay: Bay) => ({
       name: bay.name,
       items: (bay.items || []).map((item: EquipmentItem) => ({
         name: item.name,
