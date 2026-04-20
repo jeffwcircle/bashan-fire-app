@@ -9,6 +9,7 @@ import {
   setDoc,
   deleteDoc
 } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 type Item = { name: string };
 
@@ -25,6 +26,7 @@ type Truck = {
 export default function TruckAdmin() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [newTruck, setNewTruck] = useState("");
+  const router = useRouter();
 
   // ---------------- LOAD ----------------
   useEffect(() => {
@@ -161,6 +163,8 @@ export default function TruckAdmin() {
   // ---------------- UI ----------------
   return (
     <div style={{ padding: 20 }}>
+      <button onClick={() => router.push("/")}>⬅ Back</button>
+
       <h1>🚒 Truck Admin</h1>
 
       {/* CREATE TRUCK */}
