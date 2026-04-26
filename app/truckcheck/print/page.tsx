@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
