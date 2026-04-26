@@ -171,31 +171,30 @@ export default function Home() {
         Set Your Status
       </h1>
 
-      <div className="grid gap-3 mb-6">
+  <div className="grid gap-4 mb-6">
 
-        <button
-          onClick={() => updateStatus('Responding to Station')}
-          className={`bg-blue-500 text-white p-3 rounded-full px-6 shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Responding to Station')}`}
-        >
-          🚒 Responding to Station
-        </button>
+    <button
+      onClick={() => updateStatus('Responding to Station')}
+      className={`w-full text-lg py-5 px-6 bg-blue-500 text-white rounded-full shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Responding to Station')}`}
+    >
+      🚒 Responding to Station
+    </button>
 
-        <button
-          onClick={() => updateStatus('Responding to Scene')}
-          className={`bg-red-500 text-white p-3 rounded-full px-6 shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Responding to Scene')}`}
-        >
-          🔥 Responding to Scene
-        </button>
+    <button
+      onClick={() => updateStatus('Responding to Scene')}
+      className={`w-full text-lg py-5 px-6 bg-red-500 text-white rounded-full shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Responding to Scene')}`}
+    >
+      🔥 Responding to Scene
+    </button>
 
-        <button
-          onClick={() => updateStatus('Not Available')}
-          className={`bg-gray-500 text-white p-3 rounded-full px-6 shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Not Available')}`}
-        >
-          ⛔ Not Available
-        </button>
+    <button
+      onClick={() => updateStatus('Not Available')}
+      className={`w-full text-lg py-5 px-6 bg-gray-500 text-white rounded-full shadow hover:opacity-90 active:scale-95 transition transform ${isActive('Not Available')}`}
+    >
+      ⛔ Not Available
+    </button>
 
-      </div>
-
+  </div>
       <p className="mb-6">
         Current Status: <strong>{currentStatus || 'None'}</strong>
       </p>
