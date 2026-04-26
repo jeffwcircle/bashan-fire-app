@@ -1,43 +1,25 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const runtime = "edge";
-
-
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useSearchParams } from "next/navigation";
 
-type LogEntry = {
-  id: string;
-  date: string;
-  truck: string;
-  bays: any[];
-  notes: string;
-};
-
 export default function PrintPage() {
   const searchParams = useSearchParams();
 
-  const truck = searchParams.get("truck") || "";
-  const start = searchParams.get("start") || "";
-  const end = searchParams.get("end") || "";
+  const id = searchParams.get("id"); // 👈 SINGLE LOG MODE
+  const truck = searchParams.get("truck");
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
 
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") {
-      window.print();
-    }
-  };
-
-  // LOAD LOGS
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "truckLogs"), (snapshot) => {
-      const data: LogEntry[] = snapshot.docs.map((d) => ({
+      const data = snapshot.docs.map((d) => ({
         id: d.id,
-        ...(d.data() as Omit<LogEntry, "id">)
+        ...(d.data() as any)
       }));
 
       setLogs(data);
@@ -46,50 +28,37 @@ export default function PrintPage() {
     return () => unsub();
   }, []);
 
-  // SAFE DATE FILTER
-  const filtered = logs.filter((log) => {
-    const logTime = new Date(log.date).getTime();
+  // ---------------- FILTER LOGIC ----------------
+  const filteredLogs = logs.filter((log) => {
+    // ✅ SINGLE LOG MODE (highest priority)
+    if (id) return log.id === id;
 
-    const startTime = start
-      ? new Date(start + "T00:00:00").getTime()
-      : 0;
+    const matchTruck = !truck || log.truck === truck;
 
-    const endTime = end
-      ? new Date(end + "T23:59:59").getTime()
-      : Infinity;
+    const time = new Date(log.date).getTime();
+    const startTime = start ? new Date(start).getTime() : 0;
+    const endTime = end ? new Date(end).getTime() + 86400000 : Infinity;
 
-    const matchTruck = truck ? log.truck === truck : true;
-
-    return matchTruck && logTime >= startTime && logTime <= endTime;
+    return matchTruck && time >= startTime && time <= endTime;
   });
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>🖨️ Print Truck Logs</h1>
+      <h1>🖨️ Print Logs</h1>
 
-      <p>
-        Truck: <b>{truck || "All"}</b>
-      </p>
-
-      <p>
-        Date Range: <b>{start || "Any"} → {end || "Any"}</b>
-      </p>
-
-      <hr />
-
-      {filtered.length === 0 ? (
-        <p>No logs found for this filter.</p>
+      {filteredLogs.length === 0 ? (
+        <p>No log found.</p>
       ) : (
-        filtered.map((log) => (
+        filteredLogs.map((log) => (
           <div key={log.id} style={{ marginBottom: 20 }}>
             <h3>{log.truck}</h3>
             <p>{new Date(log.date).toLocaleString()}</p>
 
-            {log.bays.map((bay: any, i: number) => (
+            {log.bays?.map((bay: any, i: number) => (
               <div key={i}>
                 <strong>{bay.name}</strong>
 
-                {bay.items.map((item: any, j: number) => (
+                {bay.items?.map((item: any, j: number) => (
                   <div key={j}>
                     {item.name}: {item.status}
                   </div>
@@ -98,13 +67,17 @@ export default function PrintPage() {
             ))}
 
             {log.notes && <p><em>{log.notes}</em></p>}
+
+            {log.crew?.length > 0 && (
+              <p>
+                <strong>Crew:</strong> {log.crew.join(", ")}
+              </p>
+            )}
           </div>
         ))
       )}
 
-      <button onClick={handlePrint}>
-        🖨️ Print
-      </button>
+      <button onClick={() => window.print()}>Print</button>
     </div>
   );
 }

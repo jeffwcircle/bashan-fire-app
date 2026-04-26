@@ -10,6 +10,7 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
 type Status = "X" | "Pass" | "Fail";
@@ -30,6 +31,7 @@ type LogEntry = {
   truck: string;
   bays: Bay[];
   notes: string;
+  crew: string[];
 };
 
 export default function TruckCheck() {
@@ -47,19 +49,22 @@ export default function TruckCheck() {
   const [editBays, setEditBays] = useState<Bay[]>([]);
   const [editNotes, setEditNotes] = useState("");
 
-  // PRINT FILTERS
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedCrew, setSelectedCrew] = useState<string[]>([]);
+  const [crewOpen, setCrewOpen] = useState(false);
+
   const [printTruck, setPrintTruck] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // -----------------------------
-  // LOAD LOGS
-  // -----------------------------
+  const truckNames = Object.keys(templates);
+
+  // ---------------- LOAD LOGS ----------------
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "truckLogs"), (snapshot) => {
-      const data: LogEntry[] = snapshot.docs.map((d) => ({
+      const data = snapshot.docs.map((d) => ({
         id: d.id,
-        ...(d.data() as Omit<LogEntry, "id">)
+        ...(d.data() as any)
       }));
 
       setLogs(data);
@@ -68,9 +73,7 @@ export default function TruckCheck() {
     return () => unsub();
   }, []);
 
-  // -----------------------------
-  // LOAD TEMPLATES
-  // -----------------------------
+  // ---------------- LOAD TEMPLATES ----------------
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "truckTemplates"), (snapshot) => {
       const data: any = {};
@@ -85,19 +88,30 @@ export default function TruckCheck() {
     return () => unsub();
   }, []);
 
-  const truckNames = Object.keys(templates);
+  // ---------------- LOAD USERS ----------------
+useEffect(() => {
+  const loadUsers = async () => {
+    const { data, error } = await supabase
+      .from("profiles") // or "users" depending on your table name
+      .select("id, first_name, last_name");
 
-  // -----------------------------
-  // LOAD TEMPLATE
-  // -----------------------------
+    if (error) {
+      console.log("Crew load error:", error);
+      return;
+    }
+
+    setUsers(data || []);
+  };
+
+  loadUsers();
+}, []);
+
+  // ---------------- TEMPLATE LOAD ----------------
   const handleTruckChange = (truck: string) => {
     setSelectedTruck(truck);
 
     const template = templates[truck];
-    if (!template?.bays) {
-      setBays([]);
-      return;
-    }
+    if (!template?.bays) return setBays([]);
 
     const copy: Bay[] = template.bays.map((bay: any) => ({
       name: bay.name,
@@ -110,12 +124,8 @@ export default function TruckCheck() {
     setBays(copy);
   };
 
-  // -----------------------------
-  // TOGGLE ITEM
-  // -----------------------------
   const toggleItem = (bIndex: number, iIndex: number) => {
     const updated = [...bays];
-
     const current = updated[bIndex].items[iIndex].status;
 
     updated[bIndex].items[iIndex].status =
@@ -128,15 +138,10 @@ export default function TruckCheck() {
     setBays(updated);
   };
 
-  const getColor = (status: Status) => {
-    if (status === "Pass") return "green";
-    if (status === "Fail") return "red";
-    return "gray";
-  };
+  const getColor = (status: Status) =>
+    status === "Pass" ? "green" : status === "Fail" ? "red" : "gray";
 
-  // -----------------------------
-  // SUBMIT LOG (FIXED DATE)
-  // -----------------------------
+  // ---------------- SUBMIT ----------------
   const handleSubmit = async () => {
     setError("");
 
@@ -146,27 +151,26 @@ export default function TruckCheck() {
     }
 
     await addDoc(collection(db, "truckLogs"), {
-      date: new Date().toISOString(), // IMPORTANT FIX
+      date: new Date().toISOString(),
       truck: selectedTruck,
       bays,
-      notes
+      notes,
+      crew: selectedCrew
     });
 
     setSelectedTruck("");
     setBays([]);
     setNotes("");
+    setSelectedCrew([]);
+    setCrewOpen(false);
   };
 
-  // -----------------------------
-  // DELETE (FIXED)
-  // -----------------------------
+  // ---------------- DELETE ----------------
   const deleteLog = async (id: string) => {
     await deleteDoc(doc(db, "truckLogs", id));
   };
 
-  // -----------------------------
-  // EDIT
-  // -----------------------------
+  // ---------------- EDIT ----------------
   const startEdit = (log: LogEntry) => {
     setEditingLogId(log.id);
     setEditBays(JSON.parse(JSON.stringify(log.bays)));
@@ -175,7 +179,6 @@ export default function TruckCheck() {
 
   const toggleEditItem = (bIndex: number, iIndex: number) => {
     const updated = [...editBays];
-
     const current = updated[bIndex].items[iIndex].status;
 
     updated[bIndex].items[iIndex].status =
@@ -201,26 +204,22 @@ export default function TruckCheck() {
     setEditNotes("");
   };
 
-  // -----------------------------
-  // PRINT FILTER LOGIC (FIXED)
-  // -----------------------------
-  const filteredLogs = logs.filter((log) => {
-    const matchesTruck =
-      !printTruck || log.truck === printTruck;
+  // ---------------- FILTER ----------------
+// ---------------- FILTER ----------------
+const filteredLogs = logs.filter((log) => {
+  const matchTruck = !printTruck || log.truck === printTruck;
 
-    const logTime = new Date(log.date).getTime();
-    const start = startDate ? new Date(startDate).getTime() : null;
-    const end = endDate ? new Date(endDate).getTime() : null;
+  // 🔥 SAFE DATE PARSE (prevents Invalid Date breaking filtering)
+  const logTime = log.date ? new Date(log.date).getTime() : 0;
 
-    const matchesStart = start ? logTime >= start : true;
-    const matchesEnd = end ? logTime <= end : true;
+  const start = startDate ? new Date(startDate + "T00:00:00").getTime() : 0;
+  const end = endDate ? new Date(endDate + "T23:59:59").getTime() : Infinity;
 
-    return matchesTruck && matchesStart && matchesEnd;
-  });
+  const validDate = !isNaN(logTime);
 
-  // -----------------------------
-  // UI
-  // -----------------------------
+  return matchTruck && validDate && logTime >= start && logTime <= end;
+});
+
   return (
     <div style={{ padding: 20 }}>
       <button onClick={() => router.push("/")}>⬅ Back</button>
@@ -243,83 +242,226 @@ export default function TruckCheck() {
         ))}
       </select>
 
-      {/* BAYS */}
-      {bays.map((bay, bIndex) => (
-        <div key={bIndex} style={{ marginTop: 20 }}>
-          <h3>📦 {bay.name}</h3>
+{/* ONLY SHOW CHECK FORM WHEN TRUCK IS SELECTED */}
+{selectedTruck && (
+  <>
+    {/* BAYS */}
+    {bays.map((bay, bIndex) => (
+      <div key={bIndex} style={{ marginTop: 20 }}>
+        <h3>📦 {bay.name}</h3>
 
-          {bay.items.map((item, iIndex) => (
-            <div key={iIndex}>
-              {item.name}
+        {bay.items.map((item, iIndex) => (
+          <div key={iIndex}>
+            {item.name}
 
-              <button
-                onClick={() => toggleItem(bIndex, iIndex)}
-                style={{
-                  marginLeft: 10,
-                  backgroundColor: getColor(item.status),
-                  color: "white",
-                  border: "none",
-                  padding: "4px 10px",
-                  borderRadius: 5
-                }}
-              >
-                {item.status}
-              </button>
-            </div>
-          ))}
-        </div>
-      ))}
+            <button
+              onClick={() => toggleItem(bIndex, iIndex)}
+              style={{
+                marginLeft: 10,
+                backgroundColor: getColor(item.status),
+                color: "white",
+                border: "none",
+                padding: "4px 10px",
+                borderRadius: 5
+              }}
+            >
+              {item.status}
+            </button>
+          </div>
+        ))}
+      </div>
+    ))}
 
-      {/* NOTES */}
-      <h3 style={{ marginTop: 20 }}>Notes</h3>
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        style={{ width: "100%", height: 80 }}
-      />
+    {/* NOTES */}
+    <h3 style={{ marginTop: 20 }}>Notes</h3>
+    <textarea
+      value={notes}
+      onChange={(e) => setNotes(e.target.value)}
+      style={{ width: "100%", height: 80 }}
+    />
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
+    {/* CREW */}
+    <div style={{ marginTop: 20 }}>
       <button
-        onClick={handleSubmit}
+        onClick={() => setCrewOpen(!crewOpen)}
         style={{
-          marginTop: 10,
-          padding: "10px 20px",
-          backgroundColor: "#1565c0",
-          color: "white",
-          border: "none",
-          borderRadius: 5
+          padding: "10px",
+          background: "#eee",
+          borderRadius: 6,
+          width: "100%"
         }}
       >
-        Submit Check
+        👥 Crew Members {selectedCrew.length > 0 && `(${selectedCrew.length})`}
       </button>
 
+      {crewOpen && (
+        <div style={{ border: "1px solid #ccc", padding: 10 }}>
+          {users.map((u) => {
+            const name =
+              `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.id;
+
+            const isSelected = selectedCrew.includes(name);
+
+            return (
+              <div key={u.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {
+                      setSelectedCrew((prev) =>
+                        isSelected
+                          ? prev.filter((x) => x !== name)
+                          : [...prev, name]
+                      );
+                    }}
+                  />
+                  {" "}{name}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+
+    {/* SUBMIT */}
+    <button
+      onClick={handleSubmit}
+      style={{
+        marginTop: 10,
+        padding: "10px 20px",
+        backgroundColor: "#1565c0",
+        color: "white",
+        border: "none",
+        borderRadius: 5
+      }}
+    >
+      Submit Check
+    </button>
+  </>
+)}
       <hr style={{ margin: "30px 0" }} />
 
-      {/* PRINT CONTROLS */}
-      <h3>Print Logs</h3>
 
-      <select value={printTruck} onChange={(e) => setPrintTruck(e.target.value)}>
-        <option value="">All Trucks</option>
-        {truckNames.map((t) => (
-          <option key={t} value={t}>{t}</option>
-        ))}
-      </select>
+      {/* LOGS */}
 
-      <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-      <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+{/* FILTER CONTROLS */}
+<h3 style={{ marginTop: 20 }}>Filter Logs</h3>
 
-      <button
-        onClick={() =>
-          window.open(
-            `/truckcheck/print?truck=${printTruck}&start=${startDate}&end=${endDate}`
-          )
-        }
-      >
-        Print Filtered Logs
-      </button>
+<div>
+  {/* Truck filter */}
+  <select
+    value={printTruck}
+    onChange={(e) => setPrintTruck(e.target.value)}
+  >
+    <option value="">All Trucks</option>
+    {truckNames.map((t) => (
+      <option key={t} value={t}>
+        {t}
+      </option>
+    ))}
+  </select>
 
-      {/* LOG LIST */}
+  {/* Date filters */}
+  <input
+    type="date"
+    value={startDate}
+    onChange={(e) => setStartDate(e.target.value)}
+    style={{ marginLeft: 10 }}
+  />
+
+  <input
+    type="date"
+    value={endDate}
+    onChange={(e) => setEndDate(e.target.value)}
+    style={{ marginLeft: 10 }}
+  />
+
+  {/* Reset button */}
+  <button
+    onClick={() => {
+      setPrintTruck("");
+      setStartDate("");
+      setEndDate("");
+    }}
+    style={{ marginLeft: 10 }}
+  >
+    Reset
+  </button>
+</div>
+<button
+  onClick={() => {
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Truck Logs Print</title>
+          <style>
+            body { font-family: Arial; padding: 20px; }
+            h2 { margin-bottom: 10px; }
+            .log { border-bottom: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px; }
+            .truck { font-size: 18px; font-weight: bold; }
+            .section { margin-left: 10px; }
+          </style>
+        </head>
+        <body>
+          <h2>Truck Check Logs</h2>
+          ${filteredLogs
+            .map(
+              (log) => `
+              <div class="log">
+                <div class="truck">${log.truck}</div>
+                <div>${new Date(log.date).toLocaleString()}</div>
+
+                ${log.bays
+                  .map(
+                    (bay) => `
+                      <div class="section">
+                        <strong>${bay.name}</strong>
+                        ${bay.items
+                          .map(
+                            (item) =>
+                              `<div>${item.name}: ${item.status}</div>`
+                          )
+                          .join("")}
+                      </div>
+                    `
+                  )
+                  .join("")}
+
+                ${log.notes ? `<p><em>${log.notes}</em></p>` : ""}
+                
+                ${
+                  log.crew?.length
+                    ? `<p><strong>Crew:</strong> ${log.crew.join(", ")}</p>`
+                    : ""
+                }
+              </div>
+            `
+            )
+            .join("")}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.print();
+  }}
+  style={{
+    marginTop: 10,
+    padding: "10px 20px",
+    backgroundColor: "#444",
+    color: "white",
+    border: "none",
+    borderRadius: 5
+  }}
+>
+  🖨️ Print Filtered Logs
+</button>
       <h2 style={{ marginTop: 30 }}>Previous Logs</h2>
 
       {filteredLogs.map((log) => (
@@ -343,22 +485,19 @@ export default function TruckCheck() {
                 Delete
               </button>
 
-	      <button
-	        onClick={() =>
-	          window.open(
-	            `/truckcheck/print?truck=${encodeURIComponent(log.truck)}&start=&end=`
-	          )
-	        }
-	        style={{ marginLeft: 5 }}
-	      >
-	        Print
-	      </button>
-
+              <button
+                onClick={() =>
+                  window.open(`/truckcheck/print?id=${log.id}`, "_blank")
+                }
+              >
+                Print
+              </button>
             </div>
           </div>
 
+          {/* ✅ VIEW RESTORED */}
           {expandedLogId === log.id && (
-            <div>
+            <div style={{ marginTop: 10 }}>
               <p>{new Date(log.date).toLocaleString()}</p>
 
               {log.bays.map((bay, bIndex) => (
@@ -374,6 +513,60 @@ export default function TruckCheck() {
               ))}
 
               {log.notes && <p><em>{log.notes}</em></p>}
+{log.crew && log.crew.length > 0 && (
+  <div style={{ marginTop: 10 }}>
+    <strong>Crew:</strong>
+    <ul style={{ margin: 0, paddingLeft: 20 }}>
+      {log.crew.map((person, i) => (
+        <li key={i}>{person}</li>
+      ))}
+    </ul>
+  </div>
+)}
+            </div>
+          )}
+
+          {/* ✅ EDIT RESTORED */}
+          {editingLogId === log.id && (
+            <div style={{ marginTop: 10 }}>
+              <h4>Edit Mode</h4>
+
+              {editBays.map((bay, bIndex) => (
+                <div key={bIndex}>
+                  <h4>{bay.name}</h4>
+
+                  {bay.items.map((item, iIndex) => (
+                    <button
+                      key={iIndex}
+                      onClick={() => toggleEditItem(bIndex, iIndex)}
+                      style={{
+                        margin: 4,
+                        backgroundColor: getColor(item.status),
+                        color: "white",
+                        border: "none",
+                        padding: "4px 8px"
+                      }}
+                    >
+                      {item.name}: {item.status}
+                    </button>
+                  ))}
+                </div>
+              ))}
+
+              <textarea
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                style={{ width: "100%", marginTop: 10 }}
+              />
+
+              <button onClick={saveEdit}>Save</button>
+
+              <button
+                onClick={() => setEditingLogId(null)}
+                style={{ marginLeft: 10 }}
+              >
+                Cancel
+              </button>
             </div>
           )}
         </div>
