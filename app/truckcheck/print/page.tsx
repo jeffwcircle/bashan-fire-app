@@ -98,3 +98,5 @@ export default function PrintPage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";
