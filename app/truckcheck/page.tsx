@@ -342,6 +342,18 @@ export default function TruckCheck() {
               <button onClick={() => deleteLog(log.id)} style={{ color: "red" }}>
                 Delete
               </button>
+
+	      <button
+	        onClick={() =>
+	          window.open(
+	            `/truckcheck/print?truck=${encodeURIComponent(log.truck)}&start=&end=`
+	          )
+	        }
+	        style={{ marginLeft: 5 }}
+	      >
+	        Print
+	      </button>
+
             </div>
           </div>
 
