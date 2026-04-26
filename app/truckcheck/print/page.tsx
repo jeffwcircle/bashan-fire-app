@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
@@ -21,6 +22,12 @@ export default function PrintPage() {
   const end = searchParams.get("end") || "";
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  const handlePrint = () => {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  };
 
   // LOAD LOGS
   useEffect(() => {
@@ -92,11 +99,9 @@ export default function PrintPage() {
         ))
       )}
 
-      <button onClick={() => window.print()}>
+      <button onClick={handlePrint}>
         🖨️ Print
       </button>
     </div>
   );
 }
-
-export const dynamic = "force-dynamic";
