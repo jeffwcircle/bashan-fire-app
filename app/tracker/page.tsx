@@ -165,6 +165,7 @@ export default function Home() {
 
   return (
     <main className="p-4">
+      <button onClick={() => router.push("/")}>⬅ Back</button>
 
       {/* 🔥 STATUS BUTTONS */}
       <h1 className="text-2xl font-bold mb-2">
