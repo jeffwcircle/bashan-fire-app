@@ -1,9 +1,16 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
-import { useRouter } from 'next/navigation'
-
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 type Status = "X" | "Pass" | "Fail";
 
@@ -18,7 +25,7 @@ type Bay = {
 };
 
 type LogEntry = {
-  id: number;
+  id: string;
   date: string;
   truck: string;
   bays: Bay[];
@@ -26,77 +33,75 @@ type LogEntry = {
 };
 
 export default function TruckCheck() {
-  console.log("🚒 TruckCheck page loaded");
+  const router = useRouter();
 
   const [templates, setTemplates] = useState<any>({});
-
-  const truckNames = Object.keys(templates);
-
   const [selectedTruck, setSelectedTruck] = useState("");
   const [bays, setBays] = useState<Bay[]>([]);
   const [notes, setNotes] = useState("");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState("");
 
-  const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
-  const [editingLogId, setEditingLogId] = useState<number | null>(null);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [editBays, setEditBays] = useState<Bay[]>([]);
   const [editNotes, setEditNotes] = useState("");
 
-  const router = useRouter();
+  // PRINT FILTERS
+  const [printTruck, setPrintTruck] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // Load logs
+  // -----------------------------
+  // LOAD LOGS
+  // -----------------------------
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "truckLogs"), (snapshot) => {
-      const data: LogEntry[] = snapshot.docs.map(doc => ({
-        id: Number(doc.id),
-        ...doc.data()
-      })) as LogEntry[];
+      const data: LogEntry[] = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<LogEntry, "id">)
+      }));
 
-      setLogs(data.sort((a, b) => b.id - a.id));
+      setLogs(data);
     });
 
     return () => unsub();
   }, []);
 
-useEffect(() => {
-  console.log("🔥 Connecting to Firebase...");
+  // -----------------------------
+  // LOAD TEMPLATES
+  // -----------------------------
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "truckTemplates"), (snapshot) => {
+      const data: any = {};
 
-  const unsub = onSnapshot(collection(db, "truckTemplates"), (snapshot) => {
-    console.log("🔥 Snapshot received");
+      snapshot.forEach((doc) => {
+        data[doc.id] = doc.data();
+      });
 
-    const data: any = {};
-
-    snapshot.forEach(doc => {
-      console.log("DOC:", doc.id);
-      data[doc.id] = doc.data();
+      setTemplates(data);
     });
 
-    console.log("TEMPLATES:", data);
+    return () => unsub();
+  }, []);
 
-    setTemplates(data);
-  });
+  const truckNames = Object.keys(templates);
 
-  return () => unsub();
-}, []);
   // -----------------------------
-  // LOAD TEMPLATE FROM ADMIN
+  // LOAD TEMPLATE
   // -----------------------------
   const handleTruckChange = (truck: string) => {
     setSelectedTruck(truck);
 
     const template = templates[truck];
-
-    console.log("SELECTED TEMPLATE:", template);
-
-    if (!template) {
+    if (!template?.bays) {
       setBays([]);
       return;
     }
 
-    const copy: Bay[] = (template.bays || []).map((bay: Bay) => ({
+    const copy: Bay[] = template.bays.map((bay: any) => ({
       name: bay.name,
-      items: (bay.items || []).map((item: EquipmentItem) => ({
+      items: (bay.items || []).map((item: any) => ({
         name: item.name,
         status: "X"
       }))
@@ -106,16 +111,19 @@ useEffect(() => {
   };
 
   // -----------------------------
-  // TOGGLE CHECK ITEM
+  // TOGGLE ITEM
   // -----------------------------
   const toggleItem = (bIndex: number, iIndex: number) => {
     const updated = [...bays];
 
     const current = updated[bIndex].items[iIndex].status;
 
-    if (current === "X") updated[bIndex].items[iIndex].status = "Pass";
-    else if (current === "Pass") updated[bIndex].items[iIndex].status = "Fail";
-    else updated[bIndex].items[iIndex].status = "Pass";
+    updated[bIndex].items[iIndex].status =
+      current === "X"
+        ? "Pass"
+        : current === "Pass"
+        ? "Fail"
+        : "Pass";
 
     setBays(updated);
   };
@@ -127,7 +135,7 @@ useEffect(() => {
   };
 
   // -----------------------------
-  // SUBMIT LOG
+  // SUBMIT LOG (FIXED DATE)
   // -----------------------------
   const handleSubmit = async () => {
     setError("");
@@ -137,33 +145,12 @@ useEffect(() => {
       return;
     }
 
-    const hasX = bays.some(b =>
-      b.items.some(i => i.status === "X")
-    );
-
-    if (hasX) {
-      setError("All items must be Pass or Fail.");
-      return;
-    }
-
-    const hasFail = bays.some(b =>
-      b.items.some(i => i.status === "Fail")
-    );
-
-    if (hasFail && notes.trim() === "") {
-      setError("Notes required when something fails.");
-      return;
-    }
-
-    const newLog: LogEntry = {
-      id: Date.now(),
-      date: new Date().toLocaleString(),
+    await addDoc(collection(db, "truckLogs"), {
+      date: new Date().toISOString(), // IMPORTANT FIX
       truck: selectedTruck,
       bays,
       notes
-    };
-
-    await addDoc(collection(db, "truckLogs"), newLog);
+    });
 
     setSelectedTruck("");
     setBays([]);
@@ -171,16 +158,14 @@ useEffect(() => {
   };
 
   // -----------------------------
-  // DELETE LOG
+  // DELETE (FIXED)
   // -----------------------------
-  const deleteLog = (id: number) => {
-    const updated = logs.filter(l => l.id !== id);
-    setLogs(updated);
-    localStorage.setItem("truckLogs", JSON.stringify(updated));
+  const deleteLog = async (id: string) => {
+    await deleteDoc(doc(db, "truckLogs", id));
   };
 
   // -----------------------------
-  // START EDIT
+  // EDIT
   // -----------------------------
   const startEdit = (log: LogEntry) => {
     setEditingLogId(log.id);
@@ -188,33 +173,28 @@ useEffect(() => {
     setEditNotes(log.notes);
   };
 
-  // -----------------------------
-  // TOGGLE ITEM IN EDIT MODE
-  // -----------------------------
   const toggleEditItem = (bIndex: number, iIndex: number) => {
     const updated = [...editBays];
 
     const current = updated[bIndex].items[iIndex].status;
 
-    if (current === "X") updated[bIndex].items[iIndex].status = "Pass";
-    else if (current === "Pass") updated[bIndex].items[iIndex].status = "Fail";
-    else updated[bIndex].items[iIndex].status = "Pass";
+    updated[bIndex].items[iIndex].status =
+      current === "X"
+        ? "Pass"
+        : current === "Pass"
+        ? "Fail"
+        : "Pass";
 
     setEditBays(updated);
   };
 
-  // -----------------------------
-  // SAVE EDIT
-  // -----------------------------
-  const saveEdit = () => {
-    const updated = logs.map(log =>
-      log.id === editingLogId
-        ? { ...log, bays: editBays, notes: editNotes }
-        : log
-    );
+  const saveEdit = async () => {
+    if (!editingLogId) return;
 
-    setLogs(updated);
-    localStorage.setItem("truckLogs", JSON.stringify(updated));
+    await updateDoc(doc(db, "truckLogs", editingLogId), {
+      bays: editBays,
+      notes: editNotes
+    });
 
     setEditingLogId(null);
     setEditBays([]);
@@ -222,12 +202,29 @@ useEffect(() => {
   };
 
   // -----------------------------
+  // PRINT FILTER LOGIC (FIXED)
+  // -----------------------------
+  const filteredLogs = logs.filter((log) => {
+    const matchesTruck =
+      !printTruck || log.truck === printTruck;
+
+    const logTime = new Date(log.date).getTime();
+    const start = startDate ? new Date(startDate).getTime() : null;
+    const end = endDate ? new Date(endDate).getTime() : null;
+
+    const matchesStart = start ? logTime >= start : true;
+    const matchesEnd = end ? logTime <= end : true;
+
+    return matchesTruck && matchesStart && matchesEnd;
+  });
+
+  // -----------------------------
   // UI
   // -----------------------------
   return (
-
     <div style={{ padding: 20 }}>
       <button onClick={() => router.push("/")}>⬅ Back</button>
+
       <h1>🚒 Truck Check System</h1>
 
       {/* TRUCK SELECT */}
@@ -239,7 +236,7 @@ useEffect(() => {
         style={{ padding: 8 }}
       >
         <option value="">-- Select Truck --</option>
-        {truckNames.map(t => (
+        {truckNames.map((t) => (
           <option key={t} value={t}>
             {t}
           </option>
@@ -297,12 +294,35 @@ useEffect(() => {
         Submit Check
       </button>
 
-      {/* HISTORY */}
       <hr style={{ margin: "30px 0" }} />
 
-      <h2>Previous Logs</h2>
+      {/* PRINT CONTROLS */}
+      <h3>Print Logs</h3>
 
-      {logs.map(log => (
+      <select value={printTruck} onChange={(e) => setPrintTruck(e.target.value)}>
+        <option value="">All Trucks</option>
+        {truckNames.map((t) => (
+          <option key={t} value={t}>{t}</option>
+        ))}
+      </select>
+
+      <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+      <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+
+      <button
+        onClick={() =>
+          window.open(
+            `/truckcheck/print?truck=${printTruck}&start=${startDate}&end=${endDate}`
+          )
+        }
+      >
+        Print Filtered Logs
+      </button>
+
+      {/* LOG LIST */}
+      <h2 style={{ marginTop: 30 }}>Previous Logs</h2>
+
+      {filteredLogs.map((log) => (
         <div
           key={log.id}
           style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}
@@ -317,40 +337,24 @@ useEffect(() => {
                 View
               </button>
 
-              <button onClick={() => startEdit(log)} style={{ marginLeft: 5 }}>
-                Edit
-              </button>
+              <button onClick={() => startEdit(log)}>Edit</button>
 
-              <button
-                onClick={() => deleteLog(log.id)}
-                style={{ marginLeft: 5, color: "red" }}
-              >
+              <button onClick={() => deleteLog(log.id)} style={{ color: "red" }}>
                 Delete
               </button>
             </div>
           </div>
 
-          {/* VIEW */}
-          {expandedLogId === log.id && editingLogId !== log.id && (
+          {expandedLogId === log.id && (
             <div>
-              <p>{log.date}</p>
+              <p>{new Date(log.date).toLocaleString()}</p>
 
               {log.bays.map((bay, bIndex) => (
                 <div key={bIndex}>
                   <h4>{bay.name}</h4>
 
                   {bay.items.map((item, iIndex) => (
-                    <div
-                      key={iIndex}
-                      style={{
-                        color:
-                          item.status === "Pass"
-                            ? "green"
-                            : item.status === "Fail"
-                            ? "red"
-                            : "gray"
-                      }}
-                    >
+                    <div key={iIndex}>
                       {item.name}: {item.status}
                     </div>
                   ))}
@@ -358,52 +362,6 @@ useEffect(() => {
               ))}
 
               {log.notes && <p><em>{log.notes}</em></p>}
-            </div>
-          )}
-
-          {/* EDIT */}
-          {editingLogId === log.id && (
-            <div style={{ marginTop: 10 }}>
-              <h4>Edit Mode</h4>
-
-              {editBays.map((bay, bIndex) => (
-                <div key={bIndex}>
-                  <h4>{bay.name}</h4>
-
-                  {bay.items.map((item, iIndex) => (
-                    <button
-                      key={iIndex}
-                      onClick={() => toggleEditItem(bIndex, iIndex)}
-                      style={{
-                        margin: 4,
-                        backgroundColor: getColor(item.status),
-                        color: "white",
-                        border: "none",
-                        padding: "4px 8px"
-                      }}
-                    >
-                      {item.name}: {item.status}
-                    </button>
-                  ))}
-                </div>
-              ))}
-
-              <textarea
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                style={{ width: "100%", marginTop: 10 }}
-              />
-
-              <button onClick={saveEdit} style={{ marginTop: 10 }}>
-                Save Changes
-              </button>
-
-              <button
-                onClick={() => setEditingLogId(null)}
-                style={{ marginLeft: 10 }}
-              >
-                Cancel
-              </button>
             </div>
           )}
         </div>
