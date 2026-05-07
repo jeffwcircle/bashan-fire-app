@@ -20,12 +20,14 @@ export default function LogSearch({
       />
 
       <div style={{ marginTop: 10 }}>
+	Start Date
         <input
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
         />
 
+	End Date
         <input
           type="date"
           value={endDate}

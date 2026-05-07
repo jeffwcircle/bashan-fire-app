@@ -38,6 +38,19 @@ export default function AdminHome() {
       >
         📘 Training Logs
       </div>
+      <div
+        style={cardStyle}
+        onClick={() => router.push("/admin/icecreamcontroller")}
+      >
+        🍦 Ice Cream Social
+      </div>
+      <div
+        style={cardStyle}
+        onClick={() => router.push("/admin/photoupload")}
+      >
+        📘 Photo Upload
+      </div>
+
     </div>
   );
 }

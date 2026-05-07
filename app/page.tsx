@@ -41,6 +41,10 @@ export default function Home() {
         <div style={cardStyle} onClick={() => router.push("/tracker")}>
           👨‍🚒 Status Tracker
         </div>
+	
+	<div style={cardStyle} onClick={() => router.push("/icecreamsocial")}>
+	  🍦 Ice Cream Social
+	</div>
 
         <div style={cardStyle} onClick={() => router.push("/admin")}>
           👨‍🚒 Admin

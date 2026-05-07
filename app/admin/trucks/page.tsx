@@ -163,7 +163,7 @@ export default function TruckAdmin() {
   // ---------------- UI ----------------
   return (
     <div style={{ padding: 20 }}>
-      <button onClick={() => router.push("/")}>⬅ Back</button>
+      <button onClick={() => router.push("./")}>⬅ Back</button>
 
       <h1>🚒 Truck Admin</h1>
 
