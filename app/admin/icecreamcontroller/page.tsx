@@ -54,6 +54,23 @@ export default function IceCreamController() {
     });
   };
 
+  // UPDATE SIZE / TYPE
+  const updateSize = async (id: string, size: string) => {
+    await updateDoc(doc(db, "iceCreamItems", id), {
+      size
+    });
+  };
+
+  // UPDATE FLAVOR
+  const updateFlavor = async (
+    id: string,
+    name: string
+  ) => {
+    await updateDoc(doc(db, "iceCreamItems", id), {
+      name
+    });
+  };
+
   // ADD ITEM
   const addItem = async () => {
     if (!flavor || !size) return;
@@ -142,7 +159,7 @@ export default function IceCreamController() {
           />
 
           <input
-            placeholder="Size"
+            placeholder="Type / Size"
             value={size}
             onChange={(e) => setSize(e.target.value)}
           />
@@ -178,7 +195,9 @@ export default function IceCreamController() {
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(350px, 1fr))",
+            "repeat(auto-fit, minmax(450px, 1fr))",
+          maxWidth: 1200,
+          margin: "0 auto",
           gap: 20
         }}
       >
@@ -197,19 +216,47 @@ export default function IceCreamController() {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 15
+                alignItems: "flex-start",
+                marginBottom: 15,
+                gap: 10
               }}
             >
-              <div>
-                <h2 style={{ margin: 0 }}>
-                  🍦 {sizeKey}
-                </h2>
+              <div style={{ flex: 1 }}>
+                {/* EDITABLE TYPE */}
+                <div style={{ marginBottom: 10 }}>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      marginBottom: 5
+                    }}
+                  >
+                    Type / Size
+                  </div>
 
-                {/* PRICE EDIT */}
+                  <input
+                    value={sizeKey}
+                    onChange={(e) => {
+                      grouped[sizeKey].forEach(
+                        async (item: any) => {
+                          await updateSize(
+                            item.id,
+                            e.target.value
+                          );
+                        }
+                      );
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: 6,
+                      fontSize: 18,
+                      fontWeight: "bold"
+                    }}
+                  />
+                </div>
+
+                {/* EDITABLE PRICE */}
                 <div
                   style={{
-                    marginTop: 8,
                     display: "flex",
                     alignItems: "center",
                     gap: 8
@@ -238,13 +285,14 @@ export default function IceCreamController() {
                       );
                     }}
                     style={{
-                      width: 90,
+                      width: 100,
                       padding: 4
                     }}
                   />
                 </div>
               </div>
 
+              {/* DELETE SIZE */}
               <button
                 onClick={() =>
                   deleteSizeGroup(sizeKey)
@@ -302,15 +350,21 @@ export default function IceCreamController() {
                       : "#f9f9f9"
                 }}
               >
-                {/* FLAVOR */}
-                <div
+                {/* EDITABLE FLAVOR */}
+                <input
+                  value={item.name}
+                  onChange={(e) =>
+                    updateFlavor(
+                      item.id,
+                      e.target.value
+                    )
+                  }
                   style={{
                     fontWeight: "bold",
-                    fontSize: 18
+                    fontSize: 18,
+                    padding: 6
                   }}
-                >
-                  {item.name}
-                </div>
+                />
 
                 {/* EDITABLE QUANTITY */}
                 <div
