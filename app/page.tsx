@@ -38,6 +38,10 @@ export default function Home() {
           🚒 Truck Check Logs
         </div>
 
+        <div style={cardStyle} onClick={() => router.push("/equipment")}>
+          🧰 Equipment Check Logs
+        </div>
+
         <div style={cardStyle} onClick={() => router.push("/tracker")}>
           👨‍🚒 Status Tracker
         </div>

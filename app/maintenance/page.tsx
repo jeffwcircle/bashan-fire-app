@@ -327,24 +327,47 @@ export default function MaintenancePage() {
       ))}
 
       {/* PRINT CSS */}
-      <style jsx global>{`
-        @media print {
-          button,
-          input,
-          textarea,
-          select {
-            display: none !important;
-          }
 
-          body {
-            background: white;
-          }
+<style jsx global>{`
+  @media print {
 
-          .log-details {
-            display: block !important;
-          }
-        }
-      `}</style>
+    body {
+      background: white;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      display: none !important;
+    }
+
+    /* NORMAL LOG PRINT */
+    .log-card {
+      break-after: page;
+      page-break-after: always;
+      margin-bottom: 40px;
+    }
+
+    .log-details {
+      display: block !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    /* SINGLE LOG PRINT MODE */
+    body.printing-single .log-card {
+      display: none !important;
+    }
+
+    body.printing-single .print-single {
+      display: block !important;
+    }
+  }
+`}</style>
+
     </PageContainer>
   );
 }

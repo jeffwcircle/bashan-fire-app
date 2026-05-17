@@ -27,6 +27,13 @@ export default function AdminHome() {
 
       <div
         style={cardStyle}
+        onClick={() => router.push("/admin/equipment")}
+      >
+        🧰 Equipment Management
+      </div>
+
+      <div
+        style={cardStyle}
         onClick={() => router.push("/admin/maintenance")}
       >
         🔧 Maintenance Logs

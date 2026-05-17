@@ -14,16 +14,26 @@ export default function LogCard({
   const [editing, setEditing] = useState(false)
   const [crewOpen, setCrewOpen] = useState(false)
 
+  // 🖨 Individual print state
+  const [printing, setPrinting] = useState(false)
+
   const [editData, setEditData] = useState<any>(
     JSON.parse(JSON.stringify(log))
   )
 
   // 🔁 Toggle pass/fail
-  const toggleItem = (bIndex: number, iIndex: number) => {
+  const toggleItem = (
+    bIndex: number,
+    iIndex: number
+  ) => {
     const updated = { ...editData }
-    const current = updated.bays[bIndex].items[iIndex].status
 
-    updated.bays[bIndex].items[iIndex].status =
+    const current =
+      updated.bays[bIndex].items[iIndex]
+        .status
+
+    updated.bays[bIndex].items[iIndex]
+      .status =
       current === "X"
         ? "Pass"
         : current === "Pass"
@@ -34,40 +44,83 @@ export default function LogCard({
   }
 
   const getColor = (status: Status) =>
-    status === "Pass" ? "#2e7d32" :
-    status === "Fail" ? "#c62828" :
-    "#777"
+    status === "Pass"
+      ? "#2e7d32"
+      : status === "Fail"
+      ? "#c62828"
+      : "#777"
 
   return (
     <div
-  id={`log-${log.id}`}
+      id={`log-${log.id}`}
+      className={`log-card ${printing ? "print-single" : ""}`}
       style={{
         border: "1px solid #ccc",
         padding: 12,
         borderRadius: 8,
-        background: "white"
+        background: "white",
+        marginBottom: 15
       }}
     >
       {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          gap: 10,
+          flexWrap: "wrap"
+        }}
+      >
         <div>
-          <strong>{log.truck || "Log"}</strong>
+          <strong>
+            {log.truck || "Log"}
+          </strong>
 
-          <div style={{ fontSize: 12, color: "#666" }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: "#666"
+            }}
+          >
             {log.createdAt &&
-              new Date(log.createdAt).toLocaleString()}
+              new Date(
+                log.createdAt
+              ).toLocaleString()}
           </div>
         </div>
 
-        <div>
-          <button onClick={() => setExpanded(!expanded)}>
-            {expanded ? "Hide" : "View"}
+        <div
+          className="no-print"
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap"
+          }}
+        >
+          <button
+            onClick={() =>
+              setExpanded(
+                !expanded
+              )
+            }
+          >
+            {expanded
+              ? "Hide"
+              : "View"}
           </button>
 
           <button
             onClick={() => {
               setEditing(true)
-              setEditData(JSON.parse(JSON.stringify(log)))
+
+              setEditData(
+                JSON.parse(
+                  JSON.stringify(
+                    log
+                  )
+                )
+              )
             }}
           >
             Edit
@@ -75,182 +128,419 @@ export default function LogCard({
 
           {onDelete && (
             <button
-              onClick={() => onDelete(log.id)}
-              style={{ color: "red" }}
+              onClick={() =>
+                onDelete(log.id)
+              }
+              style={{
+                color: "red"
+              }}
             >
               Delete
             </button>
           )}
-<button
-  onClick={() => {
-    const original = document.body.innerHTML
-    const content = document.getElementById(`log-${log.id}`)?.innerHTML
 
-    if (!content) return
+          {/* 🖨 PRINT */}
+          <button
+onClick={() => {
+  setExpanded(true)
+  setPrinting(true)
 
-    document.body.innerHTML = content
+  document.body.classList.add(
+    "printing-single"
+  )
+
+  setTimeout(() => {
     window.print()
-    document.body.innerHTML = original
 
-    window.location.reload()
-  }}
->
-  🖨
-</button>
+    document.body.classList.remove(
+      "printing-single"
+    )
+
+    setPrinting(false)
+  }, 250)
+}}          >
+            🖨
+          </button>
         </div>
       </div>
 
       {/* ================= VIEW MODE ================= */}
-{(expanded || forcePrint) && !editing && (
-  <div className="log-details" style={{ marginTop: 10 }}>
-          {/* 🚒 Truck Check Bays */}
-          {log.bays?.map((bay: any, bIndex: number) => (
-            <div key={bIndex} style={{ marginBottom: 10 }}>
-              <strong>{bay.name}</strong>
-
-              {bay.items.map((item: any, iIndex: number) => (
+      {(expanded ||
+        forcePrint ||
+        printing) &&
+        !editing && (
+          <div
+            className="log-details"
+            style={{
+              marginTop: 10
+            }}
+          >
+            {/* 🚒 Truck Check Bays */}
+            {log.bays?.map(
+              (
+                bay: any,
+                bIndex: number
+              ) => (
                 <div
-                  key={iIndex}
+                  key={bIndex}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    borderBottom: "1px solid #eee",
-                    padding: "4px 0"
+                    marginBottom: 10
                   }}
                 >
-                  <span>{item.name}</span>
+                  <strong>
+                    {bay.name}
+                  </strong>
 
-                  <span
-                    style={{
-                      color:
-                        item.status === "Pass"
-                          ? "green"
-                          : item.status === "Fail"
-                          ? "red"
-                          : "#777",
-                      fontWeight: "bold"
-                    }}
-                  >
-                    {item.status}
-                  </span>
+                  {bay.items.map(
+                    (
+                      item: any,
+                      iIndex: number
+                    ) => (
+                      <div
+                        key={iIndex}
+                        style={{
+                          display:
+                            "flex",
+                          justifyContent:
+                            "space-between",
+                          borderBottom:
+                            "1px solid #eee",
+                          padding:
+                            "4px 0"
+                        }}
+                      >
+                        <span>
+                          {
+                            item.name
+                          }
+                        </span>
+
+                        <span
+                          style={{
+                            color:
+                              item.status ===
+                              "Pass"
+                                ? "green"
+                                : item.status ===
+                                  "Fail"
+                                ? "red"
+                                : "#777",
+                            fontWeight:
+                              "bold"
+                          }}
+                        >
+                          {
+                            item.status
+                          }
+                        </span>
+                      </div>
+                    )
+                  )}
                 </div>
-              ))}
-            </div>
-          ))}
+              )
+            )}
 
-          {/* 🔧 Maintenance Fields */}
-          {log.location && (
-            <p><b>Location:</b> {log.location}</p>
-          )}
+            {/* 🔧 Maintenance */}
+            {log.location && (
+              <p>
+                <b>
+                  Location:
+                </b>{" "}
+                {
+                  log.location
+                }
+              </p>
+            )}
 
-          {/* 📝 Notes */}
-          {log.notes && <p><i>{log.notes}</i></p>}
+            {/* 🔧 Checks */}
+            {log.checks && (
+              <div
+                style={{
+                  marginTop: 10
+                }}
+              >
+                <strong>
+                  Checks:
+                </strong>
 
-          {/* 👥 Crew */}
-          {log.crew?.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <strong>Crew:</strong>
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {log.crew.map((person: string, i: number) => (
-                  <li key={i}>{person}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: 20
+                  }}
+                >
+                  {Object.entries(
+                    log.checks
+                  ).map(
+                    (
+                      [
+                        key,
+                        value
+                      ]: any,
+                      i
+                    ) => (
+                      <li key={i}>
+                        {key}:{" "}
+                        {value
+                          ? "✅"
+                          : "❌"}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* 🔧 Annual */}
+            {log.annual !==
+              undefined && (
+              <p>
+                <b>
+                  Annual:
+                </b>{" "}
+                {log.annual
+                  ? "Yes"
+                  : "No"}
+              </p>
+            )}
+
+            {/* 📝 Notes */}
+            {log.notes && (
+              <p>
+                <i>
+                  {log.notes}
+                </i>
+              </p>
+            )}
+
+            {/* 👥 Crew */}
+            {log.crew
+              ?.length > 0 && (
+              <div
+                style={{
+                  marginTop: 10
+                }}
+              >
+                <strong>
+                  Crew:
+                </strong>
+
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: 20
+                  }}
+                >
+                  {log.crew.map(
+                    (
+                      person: string,
+                      i: number
+                    ) => (
+                      <li key={i}>
+                        {person}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
       {/* ================= EDIT MODE ================= */}
       {editing && (
-        <div style={{ marginTop: 10 }}>
+        <div
+          className="no-print"
+          style={{
+            marginTop: 10
+          }}
+        >
           <h4>Edit Log</h4>
 
           {/* 🚒 Edit Bays */}
-          {editData.bays?.map((bay: any, bIndex: number) => (
-            <div key={bIndex}>
-              <strong>{bay.name}</strong>
+          {editData.bays?.map(
+            (
+              bay: any,
+              bIndex: number
+            ) => (
+              <div key={bIndex}>
+                <strong>
+                  {bay.name}
+                </strong>
 
-              {bay.items.map((item: any, iIndex: number) => (
-                <div
-                  key={iIndex}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "6px 0"
-                  }}
-                >
-                  <span>{item.name}</span>
+                {bay.items.map(
+                  (
+                    item: any,
+                    iIndex: number
+                  ) => (
+                    <div
+                      key={iIndex}
+                      style={{
+                        display:
+                          "flex",
+                        justifyContent:
+                          "space-between",
+                        padding:
+                          "6px 0"
+                      }}
+                    >
+                      <span>
+                        {
+                          item.name
+                        }
+                      </span>
 
-                  <button
-                    onClick={() => toggleItem(bIndex, iIndex)}
-                    style={{
-                      minWidth: 80,
-                      backgroundColor: getColor(item.status),
-                      color: "white",
-                      border: "none",
-                      borderRadius: 5
-                    }}
-                  >
-                    {item.status}
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))}
+                      <button
+                        onClick={() =>
+                          toggleItem(
+                            bIndex,
+                            iIndex
+                          )
+                        }
+                        style={{
+                          minWidth: 80,
+                          backgroundColor:
+                            getColor(
+                              item.status
+                            ),
+                          color:
+                            "white",
+                          border:
+                            "none",
+                          borderRadius: 5
+                        }}
+                      >
+                        {
+                          item.status
+                        }
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+            )
+          )}
 
           {/* 🔧 Edit Location */}
-          {editData.location !== undefined && (
+          {editData.location !==
+            undefined && (
             <input
-              value={editData.location || ""}
+              value={
+                editData.location ||
+                ""
+              }
               onChange={(e) =>
-                setEditData({ ...editData, location: e.target.value })
+                setEditData({
+                  ...editData,
+                  location:
+                    e.target.value
+                })
               }
               placeholder="Location"
-              style={{ width: "100%", marginTop: 10 }}
+              style={{
+                width: "100%",
+                marginTop: 10
+              }}
             />
           )}
 
-          {/* 📝 Edit Notes */}
+          {/* 📝 Notes */}
           <textarea
-            value={editData.notes || ""}
-            onChange={(e) =>
-              setEditData({ ...editData, notes: e.target.value })
+            value={
+              editData.notes ||
+              ""
             }
-            style={{ width: "100%", marginTop: 10 }}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                notes:
+                  e.target.value
+              })
+            }
+            style={{
+              width: "100%",
+              marginTop: 10
+            }}
           />
 
-          {/* 👥 Crew Selection */}
-          <div style={{ marginTop: 10 }}>
+          {/* 👥 Crew */}
+          <div
+            style={{
+              marginTop: 10
+            }}
+          >
             <button
-              onClick={() => setCrewOpen(!crewOpen)}
+              onClick={() =>
+                setCrewOpen(
+                  !crewOpen
+                )
+              }
               style={{
                 width: "100%",
                 padding: 8,
-                background: "#eee",
+                background:
+                  "#eee",
                 borderRadius: 5
               }}
             >
-              👥 Crew ({editData.crew?.length || 0})
+              👥 Crew (
+              {editData.crew
+                ?.length || 0}
+              )
             </button>
 
             {crewOpen && (
-              <div style={{ border: "1px solid #ccc", padding: 10 }}>
-                {(log.availableUsers || []).map((u: any) => {
+              <div
+                style={{
+                  border:
+                    "1px solid #ccc",
+                  padding: 10
+                }}
+              >
+                {(
+                  log.availableUsers ||
+                  []
+                ).map((u: any) => {
                   const name =
-                    `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.id
+                    `${
+                      u.first_name ||
+                      ""
+                    } ${
+                      u.last_name ||
+                      ""
+                    }`.trim() ||
+                    u.id
 
-                  const selected = editData.crew?.includes(name)
+                  const selected =
+                    editData.crew?.includes(
+                      name
+                    )
 
                   return (
-                    <div key={u.id}>
+                    <div
+                      key={u.id}
+                    >
                       <label>
                         <input
                           type="checkbox"
-                          checked={selected}
+                          checked={
+                            selected
+                          }
                           onChange={() => {
-                            const updatedCrew = selected
-                              ? editData.crew.filter((x: string) => x !== name)
-                              : [...(editData.crew || []), name]
+                            const updatedCrew =
+                              selected
+                                ? editData.crew.filter(
+                                    (
+                                      x: string
+                                    ) =>
+                                      x !==
+                                      name
+                                  )
+                                : [
+                                    ...(editData.crew ||
+                                      []),
+                                    name
+                                  ]
 
                             setEditData({
                               ...editData,
@@ -258,7 +548,9 @@ export default function LogCard({
                             })
                           }}
                         />
-                        {" "}{name}
+
+                        {" "}
+                        {name}
                       </label>
                     </div>
                   )
@@ -267,20 +559,35 @@ export default function LogCard({
             )}
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div style={{ marginTop: 10 }}>
+          {/* ACTIONS */}
+          <div
+            style={{
+              marginTop: 10
+            }}
+          >
             <button
               onClick={() => {
-                onSaveEdit(editData)
-                setEditing(false)
+                onSaveEdit(
+                  editData
+                )
+
+                setEditing(
+                  false
+                )
               }}
             >
               Save
             </button>
 
             <button
-              onClick={() => setEditing(false)}
-              style={{ marginLeft: 10 }}
+              onClick={() =>
+                setEditing(
+                  false
+                )
+              }
+              style={{
+                marginLeft: 10
+              }}
             >
               Cancel
             </button>
@@ -290,11 +597,3 @@ export default function LogCard({
     </div>
   )
 }
-
-<style jsx>{`
-  @media print {
-    .log-details {
-      display: block !important;
-    }
-  }
-`}</style>
