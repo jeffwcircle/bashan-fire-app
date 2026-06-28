@@ -291,21 +291,6 @@ export default function TruckCheck() {
     gap: 16,
   }}
 >
-  <button
-    className="btn btn-secondary"
-    onClick={() => router.push("/")}
-  >
-    ← Dashboard
-  </button>
-
-  <div
-    style={{
-      color: "#6b7280",
-      fontWeight: 600,
-    }}
-  >
-    {filteredLogs.length} Total Logs
-  </div>
 <button
   className="btn btn-success"
   onClick={() => {

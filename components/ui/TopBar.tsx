@@ -1,6 +1,7 @@
 "use client";
 
-import { CalendarDays, Bell, ChevronDown, LogOut } from "lucide-react";
+import { Bell, CalendarDays, LogOut } from "lucide-react";
+import { theme } from "@/lib/theme";
 
 interface Props {
   userName?: string;
@@ -19,63 +20,97 @@ export default function TopBar({
   });
 
   return (
-    <div
+    <header
       style={{
-        background: "white",
-        borderRadius: 16,
+        background: theme.colors.surface,
+        borderRadius: theme.radius.lg,
         padding: "18px 24px",
         marginBottom: 24,
+        boxShadow: theme.shadow.card,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,.08)",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          color: "#6b7280",
-        }}
-      >
-        <CalendarDays size={18} />
-        {today}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 18,
-        }}
-      >
-        <Bell
-          size={20}
-          color="#6b7280"
-        />
+      <div>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: theme.colors.text,
+          }}
+        >
+          Welcome to FireHub
+        </div>
 
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 8,
-            cursor: "pointer",
-            fontWeight: 600,
+            color: theme.colors.textLight,
+            marginTop: 6,
           }}
         >
-          {userName}
+          <CalendarDays size={16} />
+          {today}
+        </div>
+      </div>
 
-          <ChevronDown size={18} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 20,
+        }}
+      >
+        <Bell
+          size={20}
+          color={theme.colors.textLight}
+        />
+
+        <div
+          style={{
+            textAlign: "right",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 700,
+              color: theme.colors.text,
+            }}
+          >
+            {userName}
+          </div>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: theme.colors.textLight,
+            }}
+          >
+            Logged In
+          </div>
         </div>
 
         <button
-          className="btn btn-secondary"
           onClick={onLogout}
+          style={{
+            border: "none",
+            background: theme.colors.primary,
+            color: "white",
+            borderRadius: theme.radius.md,
+            padding: "10px 14px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
           <LogOut size={16} />
+          Logout
         </button>
       </div>
-    </div>
+    </header>
   );
 }
