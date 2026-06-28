@@ -57,6 +57,8 @@ export default function TruckCheck() {
   const [forcePrint, setForcePrint] =
     useState(false);
 
+  const [showForm, setShowForm] = useState(false);
+
   // LOAD LOGS
   useEffect(() => {
     const unsub = onSnapshot(
@@ -275,19 +277,61 @@ export default function TruckCheck() {
     });
 
   return (
-    <PageContainer>
-      <button
-        onClick={() =>
-          router.push("/")
-        }
-      >
-        ⬅ Back
-      </button>
+    <PageContainer
+      title="Truck Check Logs"
+      subtitle="Complete monthly apparatus inspections and review previous reports."
+    >
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+    flexWrap: "wrap",
+    gap: 16,
+  }}
+>
+  <button
+    className="btn btn-secondary"
+    onClick={() => router.push("/")}
+  >
+    ← Dashboard
+  </button>
 
-      <h1>🚒 Truck Check</h1>
+  <div
+    style={{
+      color: "#6b7280",
+      fontWeight: 600,
+    }}
+  >
+    {filteredLogs.length} Total Logs
+  </div>
+<button
+  className="btn btn-success"
+  onClick={() => {
+    setShowForm(!showForm);
+
+    if (!showForm) {
+      setSelectedTruck("");
+      setBays([]);
+    }
+  }}
+  style={{
+    width: "100%",
+    marginTop: 20,
+    padding: "16px",
+    fontSize: "1rem",
+  }}
+>
+  {showForm ? "Cancel" : "➕ Start Truck Check Log"}
+</button>
+</div>
+
 
       {/* SELECT */}
+{showForm && (
       <select
+	className="shadow-hover"
         value={selectedTruck}
         onChange={(e) =>
           handleTruckChange(
@@ -308,16 +352,16 @@ export default function TruckCheck() {
           </option>
         ))}
       </select>
+)}
 
       {/* FORM */}
-      {selectedTruck && (
+      {showForm && selectedTruck && (
         <div
-          style={{
-            background: "#f5f5f5",
-            padding: 12,
-            borderRadius: 8
-          }}
-        >
+  className="card"
+  style={{
+    marginTop: 20,
+  }}
+>
           {bays.map(
             (bay, bIndex) => {
               // CHECK STATUS
@@ -344,7 +388,7 @@ export default function TruckCheck() {
                   style={{
                     marginTop: 15,
                     border:
-                      "1px solid #ddd",
+                      "1px solid #d6dbe3",
                     borderRadius: 8,
                     overflow:
                       "hidden"
@@ -366,10 +410,9 @@ export default function TruckCheck() {
                       )
                     }
                     style={{
-                      background:
-                        complete
-                          ? "#dcedc8"
-                          : "#fafafa",
+background: complete
+  ? "#dcfce7"
+  : "#ffffff",
                       padding: 12,
                       cursor:
                         "pointer",
@@ -455,7 +498,7 @@ export default function TruckCheck() {
                                 )
                               }
                               style={{
-                                minWidth: 80,
+                                minWidth: 95,
                                 padding:
                                   "6px 10px",
                                 backgroundColor:
@@ -485,6 +528,7 @@ export default function TruckCheck() {
 
           {/* NOTES */}
           <textarea
+	    rows={5}
             placeholder="Notes"
             value={notes}
             onChange={(e) =>
@@ -587,17 +631,15 @@ export default function TruckCheck() {
           </div>
 
           {/* SUBMIT */}
-          <button
-            onClick={handleSubmit}
-            style={{
-              marginTop: 10,
-              padding: "10px",
-              background:
-                "#1565c0",
-              color: "white",
-              borderRadius: 5,
-              width: "100%"
-            }}
+<button
+  className="btn btn-primary"
+  onClick={handleSubmit}
+style={{
+  marginTop: 24,
+  width: "100%",
+  padding: "16px",
+  fontSize: "1.05rem",
+}}
           >
             Submit Check
           </button>

@@ -267,51 +267,62 @@ export default function EquipmentTestingPage() {
     });
 
   return (
-    <PageContainer>
+<PageContainer
+  title="Equipment Testing"
+  subtitle="Perform equipment inspections and record testing results."
+>
       {/* BACK */}
-      <button
-        onClick={() =>
-          router.push("/")
-        }
-      >
-        ⬅ Back
-      </button>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+    flexWrap: "wrap",
+    gap: 16,
+  }}
+>
+  <button
+    className="btn btn-secondary"
+    onClick={() => router.push("/")}
+  >
+    ← Dashboard
+  </button>
 
-      <h1>
-        🧰 Equipment Testing
-      </h1>
-
+  <div
+    style={{
+      color: "#6b7280",
+      fontWeight: 600,
+    }}
+  >
+    {filteredLogs.length} Equipment Logs
+  </div>
+</div>
       {/* START BUTTON */}
       {!showForm && (
         <button
           onClick={() =>
             setShowForm(true)
           }
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 18,
-            background: "#1565c0",
-            color: "white",
-            borderRadius: 8,
-            marginBottom: 20
-          }}
-        >
+className="btn btn-success"
+style={{
+  width: "100%",
+  padding: "16px",
+  fontSize: "1rem",
+  marginBottom: 20,
+}}        >
           ➕ Start Equipment Check
         </button>
       )}
 
       {/* FORM */}
       {showForm && (
-        <div
-          style={{
-            background: "#f5f5f5",
-            padding: 15,
-            borderRadius: 10,
-            marginBottom: 20
-          }}
-        >
-          {/* SELECT */}
+<div
+  className="card"
+  style={{
+    marginBottom: 30,
+  }}
+>          {/* SELECT */}
           <div
             style={{
               marginBottom: 15
@@ -378,8 +389,8 @@ export default function EquipmentTestingPage() {
                   background: "white",
                   padding: 12,
                   borderRadius: 6,
-                  border:
-                    "1px solid #ddd",
+border:
+  "1px solid #dbe3eb",
                   whiteSpace:
                     "pre-wrap"
                 }}
@@ -431,12 +442,12 @@ export default function EquipmentTestingPage() {
                         alignItems:
                           "center",
                         gap: 10,
-                        background:
-                          step.checked
-                            ? "#dcedc8"
-                            : "white",
+background:
+  step.checked
+    ? "#dcfce7"
+    : "#ffffff",
                         border:
-                          "1px solid #ccc",
+  "1px solid #dbe3eb",
                         padding: 12,
                         borderRadius: 8,
                         cursor:
@@ -520,7 +531,7 @@ export default function EquipmentTestingPage() {
               style={{
                 width: "100%",
                 padding: 10,
-                background: "#eee",
+                background: "#f3f4f6",
                 borderRadius: 6
               }}
             >
@@ -532,7 +543,7 @@ export default function EquipmentTestingPage() {
               <div
                 style={{
                   border:
-                    "1px solid #ccc",
+                    "1px solid #dbe3eb",
                   padding: 10,
                   background:
                     "white"
@@ -610,14 +621,11 @@ export default function EquipmentTestingPage() {
               onClick={
                 handleSubmit
               }
-              style={{
-                flex: 1,
-                padding: 12,
-                background:
-                  "#1565c0",
-                color: "white",
-                borderRadius: 6
-              }}
+className="btn btn-primary"
+style={{
+  flex: 1,
+  padding: 16,
+}}
             >
               💾 Save Check
             </button>
@@ -642,10 +650,10 @@ export default function EquipmentTestingPage() {
 
                 setCrew([]);
               }}
-              style={{
-                flex: 1,
-                padding: 12
-              }}
+className="btn btn-secondary"
+style={{
+  flex: 1,
+}}
             >
               Cancel
             </button>
@@ -680,13 +688,15 @@ export default function EquipmentTestingPage() {
       />
 
       {/* LOGS */}
-      <h2
-        style={{
-          marginTop: 20
-        }}
-      >
-        Logs
-      </h2>
+<h2
+  style={{
+    marginTop: 10,
+    marginBottom: 20,
+    color: "#991b1b",
+  }}
+>
+  Equipment History
+</h2>
 
       {filteredLogs.map((log) => (
         <LogCard

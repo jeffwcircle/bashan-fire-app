@@ -54,14 +54,14 @@ export default function LogCard({
     <div
       id={`log-${log.id}`}
       className={`log-card ${printing ? "print-single" : ""}`}
-      style={{
-        border: "1px solid #ccc",
-        padding: 12,
-        borderRadius: 8,
-        background: "white",
-        marginBottom: 15
-      }}
-    >
+style={{
+  background: "#ffffff",
+  borderRadius: 18,
+  border: "1px solid #dbe3eb",
+  boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+  padding: 22,
+  marginBottom: 24
+}}    >
       {/* HEADER */}
       <div
         style={{
@@ -73,14 +73,21 @@ export default function LogCard({
         }}
       >
         <div>
-          <strong>
-            {log.truck || "Log"}
-          </strong>
-
+<div
+  style={{
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#991b1b"
+  }}
+>
+  🚒 {log.truck || "Log"}
+</div>
           <div
             style={{
-              fontSize: 12,
-              color: "#666"
+fontSize: 14,
+fontWeight: 500,
+color: "#6b7280",
+marginTop: 6
             }}
           >
             {log.createdAt &&
@@ -92,13 +99,13 @@ export default function LogCard({
 
         <div
           className="no-print"
-          style={{
-            display: "flex",
-            gap: 6,
-            flexWrap: "wrap"
-          }}
-        >
-          <button
+style={{
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+  alignItems: "center"
+}}        >
+          <button className="btn btn-secondary"
             onClick={() =>
               setExpanded(
                 !expanded
@@ -110,7 +117,7 @@ export default function LogCard({
               : "View"}
           </button>
 
-          <button
+          <button className="btn btn-secondary"
             onClick={() => {
               setEditing(true)
 
@@ -127,7 +134,7 @@ export default function LogCard({
           </button>
 
           {onDelete && (
-            <button
+            <button className="btn btn-primary"
               onClick={() =>
                 onDelete(log.id)
               }
@@ -187,10 +194,17 @@ onClick={() => {
                     marginBottom: 10
                   }}
                 >
-                  <strong>
-                    {bay.name}
-                  </strong>
-
+<div
+  style={{
+    marginTop:20,
+    marginBottom:10,
+    fontWeight:700,
+    fontSize:18,
+    color:"#1f2937"
+  }}
+>
+  📦 {bay.name}
+</div>
                   {bay.items.map(
                     (
                       item: any,
@@ -203,10 +217,10 @@ onClick={() => {
                             "flex",
                           justifyContent:
                             "space-between",
-                          borderBottom:
-                            "1px solid #eee",
+borderBottom:
+  "1px solid #edf2f7",
                           padding:
-                            "4px 0"
+                            "10px 0"
                         }}
                       >
                         <span>
@@ -217,14 +231,12 @@ onClick={() => {
 
                         <span
                           style={{
-                            color:
-                              item.status ===
-                              "Pass"
-                                ? "green"
-                                : item.status ===
-                                  "Fail"
-                                ? "red"
-                                : "#777",
+color:
+  item.status === "Pass"
+    ? "#16a34a"
+    : item.status === "Fail"
+    ? "#dc2626"
+    : "#6b7280", 
                             fontWeight:
                               "bold"
                           }}
@@ -306,11 +318,16 @@ onClick={() => {
 
             {/* 📝 Notes */}
             {log.notes && (
-              <p>
-                <i>
-                  {log.notes}
-                </i>
-              </p>
+<div
+  className="card"
+  style={{
+    marginTop:20,
+    background:"#fafafa",
+    fontStyle:"italic"
+  }}
+>
+  {log.notes}
+</div>
             )}
 
             {/* 👥 Crew */}
@@ -390,8 +407,9 @@ onClick={() => {
                         }
                       </span>
 
-                      <button
-                        onClick={() =>
+<button
+  className="btn btn-success"
+  onClick={() => 
                           toggleItem(
                             bIndex,
                             iIndex
@@ -579,11 +597,10 @@ onClick={() => {
               Save
             </button>
 
-            <button
-              onClick={() =>
-                setEditing(
-                  false
-                )
+<button
+  className="btn btn-secondary"
+  onClick={() =>
+    setEditing(false)
               }
               style={{
                 marginLeft: 10

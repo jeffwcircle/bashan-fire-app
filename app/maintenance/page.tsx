@@ -1,5 +1,9 @@
 "use client";
 
+import PageHeader from "@/components/ui/PageHeader"
+import ActionButton from "@/components/ui/ActionButton"
+import Panel from "@/components/ui/Panel"
+
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import {
@@ -152,35 +156,37 @@ export default function MaintenancePage() {
   });
 
   return (
-    <PageContainer>
-      <button onClick={() => router.push("/")}>⬅ Back</button>
 
-      <h1>🔧 Maintenance Logs</h1>
+<PageContainer>
+
+<PageHeader
+  title="Maintenance Logs"
+  subtitle="Record and review apparatus maintenance."
+  count={filteredLogs.length}
+  countLabel="Logs"
+  onBack={() => router.push("/")}
+/>
 
       {/* ➕ RECORD BUTTON */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        style={{
-          marginBottom: 10,
-          padding: "10px",
-          background: "#2e7d32",
-          color: "white",
-          borderRadius: 5,
-          width: "100%"
-        }}
-      >
-        {showForm ? "Cancel" : "➕ Record Maintenance Log"}
-      </button>
-
+<ActionButton
+  text={
+    showForm
+      ? "Cancel"
+      : "➕ Start New Maintenance Log"
+  }
+  onClick={() => setShowForm(!showForm)}
+/>
       {/* FORM */}
       {showForm && (
-        <div style={{ background: "#f5f5f5", padding: 12, borderRadius: 8 }}>
+
+
+<Panel>
           
           {/* 🚒 TRUCK DROPDOWN */}
           <select
             value={truck}
             onChange={(e) => setTruck(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }}
+            style={{ marginBottom: 16 }}
           >
             <option value="">Select Truck</option>
             {trucks.map((t) => (
@@ -192,14 +198,14 @@ export default function MaintenancePage() {
             placeholder="Location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }}
+            style={{ marginBottom: 16 }}
           />
 
           <textarea
             placeholder="Notes"
             value={notes || ""}
             onChange={(e) => setNotes(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }}
+            style={{ marginBottom: 16 }}
           />
 
           {/* 👥 CREW */}
@@ -209,7 +215,7 @@ export default function MaintenancePage() {
               style={{
                 width: "100%",
                 padding: 8,
-                background: "#eee",
+	        background: "#f3f4f6",
                 borderRadius: 5
               }}
             >
@@ -217,7 +223,7 @@ export default function MaintenancePage() {
             </button>
 
             {crewOpen && (
-              <div style={{ border: "1px solid #ccc", padding: 10 }}>
+              <div style={{ border: "1px solid #dbe3eb", padding: 10 }}>
                 {users.map((u) => {
                   const name =
                     `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.id;
@@ -277,18 +283,17 @@ export default function MaintenancePage() {
 
           <button
             onClick={handleSubmit}
-            style={{
-              marginTop: 10,
-              padding: "10px",
-              background: "#1565c0",
-              color: "white",
-              borderRadius: 5,
-              width: "100%"
-            }}
+className="btn btn-primary"
+style={{
+  width: "100%",
+  marginTop: 24,
+  padding: "16px",
+  fontSize: "1rem",
+}}
           >
             Save Log
           </button>
-        </div>
+        </Panel>
       )}
 
       {/* SEARCH */}
@@ -314,7 +319,9 @@ export default function MaintenancePage() {
       />
 
       {/* LOG LIST */}
-      <h2 style={{ marginTop: 20 }}>Logs</h2>
+<h2 className="page-title">
+  Maintenance History
+</h2>
 
       {filteredLogs.map((log) => (
         <LogCard
