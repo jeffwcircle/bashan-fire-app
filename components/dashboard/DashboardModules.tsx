@@ -6,7 +6,7 @@ import {
   Package,
   BookOpen,
   Users,
-  IceCreamBowl,
+  IceCreamCone,
   Settings,
 } from "lucide-react";
 
@@ -15,41 +15,51 @@ import { theme } from "@/lib/theme";
 
 export default function DashboardModules() {
   return (
-    <>
-<div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  }}
->
-  <div>
-    <h2
-      style={{
-        margin: 0,
-        fontSize: 30,
-        fontWeight: 700,
-      }}
-    >
-      FireHub Modules
-    </h2>
-
     <div
       style={{
-        color: theme.colors.textLight,
-        marginTop: 6,
+        maxWidth: "1600px",
+        width: "100%",
+        margin: "0 auto",
+        padding: "0 6%",
       }}
     >
-      Select a module to begin.
-    </div>
-  </div>
-</div>
       <div
         style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 28,
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 30,
+              fontWeight: 700,
+            }}
+          >
+            FireHub Modules
+          </h2>
+
+          <div
+            style={{
+              color: theme.colors.textLight,
+              marginTop: 6,
+            }}
+          >
+            Select a module to begin.
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="module-grid"
+        style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(280px,1fr))",
+          gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
           gap: 24,
         }}
       >
@@ -98,7 +108,7 @@ export default function DashboardModules() {
           description="Fundraiser management"
           href="/icecreamsocial"
           color="#ec4899"
-          icon={<IceCreamBowl size={42} color="#ec4899" />}
+          icon={<IceCreamCone size={42} color="#ec4899" />}
         />
 
         <ModuleCard
@@ -109,6 +119,6 @@ export default function DashboardModules() {
           icon={<Settings size={42} color={theme.colors.admin} />}
         />
       </div>
-    </>
+    </div>
   );
 }

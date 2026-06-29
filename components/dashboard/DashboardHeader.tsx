@@ -20,19 +20,16 @@ export default function DashboardHeader({
 }: Props) {
   return (
     <div
+      className="dashboard-header"
       style={{
         background: theme.colors.surface,
         borderRadius: theme.radius.lg,
         boxShadow: theme.shadow.card,
         padding: 32,
         marginBottom: 28,
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: 32,
-        alignItems: "center",
       }}
     >
-      {/* Left Side */}
+      {/* LEFT */}
 
       <div
         style={{
@@ -61,30 +58,23 @@ export default function DashboardHeader({
 
           <h1
             style={{
-              margin: "4px 0",
-              fontSize: 38,
+              margin: "6px 0",
+              fontSize: 40,
               fontWeight: 800,
-              color: theme.colors.text,
+              color: theme.colors.primary,
             }}
           >
-            {userName}
+            FireHub
           </h1>
 
           <div
             style={{
-              fontSize: 30,
-              fontWeight: 700,
+              fontSize: 22,
+              fontWeight: 600,
+              color: theme.colors.text,
             }}
           >
-            Bashan
-            <span
-              style={{
-                color: theme.colors.primary,
-              }}
-            >
-              {" "}
-              FireHub
-            </span>
+            Bashan Volunteer Fire Department
           </div>
 
           <div
@@ -93,56 +83,51 @@ export default function DashboardHeader({
               color: theme.colors.textLight,
             }}
           >
-            Bashan Volunteer Fire Department
+            Bashan, Ohio
           </div>
 
           <div
             style={{
-              color: theme.colors.textLight,
+              marginTop: 14,
+              fontWeight: 600,
+              color: theme.colors.text,
             }}
           >
-            Bashan, Ohio
+            Welcome back, {userName}
           </div>
         </div>
       </div>
 
-      {/* Right Side */}
+      {/* RIGHT */}
 
       <div>
-        <div
+        <h3
           style={{
-            fontSize: 20,
-            fontWeight: 700,
-            marginBottom: 14,
+            marginTop: 0,
+            marginBottom: 16,
           }}
         >
           Department Overview
-        </div>
+        </h3>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 14,
-          }}
-        >
+        <div className="dashboard-stats">
           <StatCard
             title="Apparatus"
             value={12}
             icon={
               <Truck
-                size={24}
+                size={22}
                 color={theme.colors.truck}
               />
             }
           />
 
           <StatCard
-            title="Open Logs"
+            title="Logs"
             value={37}
             icon={
               <ClipboardList
-                size={24}
+                size={22}
                 color={theme.colors.maintenance}
               />
             }
@@ -153,7 +138,7 @@ export default function DashboardHeader({
             value={26}
             icon={
               <Users
-                size={24}
+                size={22}
                 color={theme.colors.training}
               />
             }
@@ -164,7 +149,7 @@ export default function DashboardHeader({
             value={3}
             icon={
               <AlertTriangle
-                size={24}
+                size={22}
                 color={theme.colors.equipment}
               />
             }
