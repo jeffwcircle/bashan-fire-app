@@ -38,10 +38,7 @@ export default function AppShell({
             padding: 24,
           }}
         >
-          <TopBar
-            userName={userName}
-            onLogout={onLogout}
-          />
+          <TopBar />
 
           {children}
         </div>
