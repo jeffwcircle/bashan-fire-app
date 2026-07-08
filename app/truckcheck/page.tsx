@@ -13,6 +13,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "@/components/auth/AuthProvider";
+
 import LogCard from "@/components/LogCard";
 import LogSearch from "@/components/LogSearch";
 import PageContainer from "@/components/PageContainer";
@@ -21,6 +23,8 @@ type Status = "X" | "Pass" | "Fail";
 
 export default function TruckCheck() {
   const router = useRouter();
+
+  const { user } = useAuth();
 
   const [templates, setTemplates] = useState<any>({});
   const [logs, setLogs] = useState<any[]>([]);
@@ -291,9 +295,16 @@ export default function TruckCheck() {
     gap: 16,
   }}
 >
+
 <button
   className="btn btn-success"
   onClick={() => {
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     setShowForm(!showForm);
 
     if (!showForm) {
@@ -618,7 +629,18 @@ background: complete
           {/* SUBMIT */}
 <button
   className="btn btn-primary"
-  onClick={handleSubmit}
+
+onClick={() => {
+
+  if (!user) {
+    router.push("/login");
+    return;
+  }
+
+  handleSubmit();
+
+}}
+
 style={{
   marginTop: 24,
   width: "100%",

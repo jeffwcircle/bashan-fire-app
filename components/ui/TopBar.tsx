@@ -1,23 +1,33 @@
 "use client";
 
-import { Bell, CalendarDays, LogOut } from "lucide-react";
+import Link from "next/link";
+import {
+  Bell,
+  CalendarDays,
+  LogIn,
+  LogOut,
+} from "lucide-react";
+
 import { theme } from "@/lib/theme";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useProfile } from "@/components/auth/ProfileProvider";
 
-interface Props {
-  userName?: string;
-  onLogout?: () => void;
-}
+export default function TopBar() {
+  const { user, loading, signOut } = useAuth();
+  const { profile } = useProfile();
 
-export default function TopBar({
-  userName = "Loading...",
-  onLogout,
-}: Props) {
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
   });
+
+  const displayName = profile
+    ? `${profile.first_name} ${profile.last_name}`
+    : "Guest";
+
+  const role = profile?.role ?? "Guest";
 
   return (
     <header
@@ -30,6 +40,8 @@ export default function TopBar({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
+        gap: 16,
       }}
     >
       <div>
@@ -80,7 +92,7 @@ export default function TopBar({
               color: theme.colors.text,
             }}
           >
-            {userName}
+            {loading ? "Loading..." : displayName}
           </div>
 
           <div
@@ -89,27 +101,32 @@ export default function TopBar({
               color: theme.colors.textLight,
             }}
           >
-            Logged In
+            {role}
           </div>
         </div>
 
-        <button
-          onClick={onLogout}
-          style={{
-            border: "none",
-            background: theme.colors.primary,
-            color: "white",
-            borderRadius: theme.radius.md,
-            padding: "10px 14px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <LogOut size={16} />
-          Logout
-        </button>
+        {user ? (
+          <button
+            onClick={signOut}
+            className="btn btn-primary"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        ) : (
+          <Link
+            href="/login"
+            className="btn btn-primary"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <LogIn size={16} />
+            Login
+          </Link>
+        )}
       </div>
     </header>
   );
