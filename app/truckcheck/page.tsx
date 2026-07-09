@@ -722,7 +722,7 @@ if (!allowed) {
 
 }}
 
-onSaveEdit={(log) => {
+onSaveEdit={(log: string) => {
 
 if (!allowed) {
     setShowAuthDialog(true);
