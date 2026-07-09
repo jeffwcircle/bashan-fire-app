@@ -722,7 +722,7 @@ if (!allowed) {
 
 }}
 
-onSaveEdit={(log: string) => {
+onSaveEdit={(log: TruckCheckLog) => {
 
 if (!allowed) {
     setShowAuthDialog(true);
