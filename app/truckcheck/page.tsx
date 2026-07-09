@@ -1,5 +1,7 @@
 "use client";
 
+import { useProfile } from "@/components/auth/ProfileProvider";
+
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import {
@@ -10,6 +12,9 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
+
+import AuthDialog from "@/components/auth/AuthDialog";
+
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -19,12 +24,23 @@ import LogCard from "@/components/LogCard";
 import LogSearch from "@/components/LogSearch";
 import PageContainer from "@/components/PageContainer";
 
+import { canEdit } from "@/lib/permissions";
+
 type Status = "X" | "Pass" | "Fail";
 
 export default function TruckCheck() {
   const router = useRouter();
 
   const { user } = useAuth();
+
+const { profile } = useProfile();
+
+const [showAuthDialog, setShowAuthDialog] =
+  useState(false);
+
+const allowed =
+  !!user &&
+  canEdit(profile?.role);
 
   const [templates, setTemplates] = useState<any>({});
   const [logs, setLogs] = useState<any[]>([]);
@@ -298,20 +314,20 @@ export default function TruckCheck() {
 
 <button
   className="btn btn-success"
-  onClick={() => {
+onClick={() => {
 
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+if (!allowed) {
+    setShowAuthDialog(true);
+    return;
+}
 
     setShowForm(!showForm);
 
     if (!showForm) {
-      setSelectedTruck("");
-      setBays([]);
+        setSelectedTruck("");
+        setBays([]);
     }
-  }}
+}}
   style={{
     width: "100%",
     marginTop: 20,
@@ -632,15 +648,14 @@ background: complete
 
 onClick={() => {
 
-  if (!user) {
-    router.push("/login");
+if (!allowed) {
+    setShowAuthDialog(true);
     return;
-  }
+}
 
-  handleSubmit();
+    handleSubmit();
 
 }}
-
 style={{
   marginTop: 24,
   width: "100%",
@@ -696,8 +711,27 @@ style={{
             availableUsers:
               users
           }}
-          onDelete={deleteLog}
-          onSaveEdit={updateLog}
+onDelete={(id) => {
+
+if (!allowed) {
+    setShowAuthDialog(true);
+    return;
+}
+
+    deleteLog(id);
+
+}}
+
+onSaveEdit={(log) => {
+
+if (!allowed) {
+    setShowAuthDialog(true);
+    return;
+}
+
+    updateLog(log);
+
+}}
           forcePrint={forcePrint}
         />
       ))}
@@ -742,6 +776,11 @@ style={{
     }
   }
 `}</style>
+
+<AuthDialog
+  open={showAuthDialog}
+  onClose={() => setShowAuthDialog(false)}
+/>
 
     </PageContainer>
   );

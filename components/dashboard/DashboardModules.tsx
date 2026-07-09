@@ -10,7 +10,7 @@ import {
   Settings,
 } from "lucide-react";
 
-import ModuleCard from "@/components/ui/ModuleCard";
+import ModuleTile from "@/components/dashboard/ModuleTile";
 import { theme } from "@/lib/theme";
 
 export default function DashboardModules() {
@@ -59,64 +59,107 @@ export default function DashboardModules() {
         className="module-grid"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(280px,1fr))",
           gap: 24,
         }}
       >
-        <ModuleCard
+        <ModuleTile
           title="Truck Check"
           description="Monthly apparatus inspections"
           href="/truckcheck"
+          permission="member"
           color={theme.colors.truck}
-          icon={<Truck size={42} color={theme.colors.truck} />}
+          icon={
+            <Truck
+              size={42}
+              color={theme.colors.truck}
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Equipment"
           description="Equipment testing and inspections"
           href="/equipment"
+          permission="member"
           color={theme.colors.equipment}
-          icon={<Package size={42} color={theme.colors.equipment} />}
+          icon={
+            <Package
+              size={42}
+              color={theme.colors.equipment}
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Maintenance"
           description="Vehicle maintenance records"
           href="/maintenance"
+          permission="member"
           color={theme.colors.maintenance}
-          icon={<Wrench size={42} color={theme.colors.maintenance} />}
+          icon={
+            <Wrench
+              size={42}
+              color={theme.colors.maintenance}
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Training"
           description="Department training records"
           href="/training"
+          permission="member"
           color={theme.colors.training}
-          icon={<BookOpen size={42} color={theme.colors.training} />}
+          icon={
+            <BookOpen
+              size={42}
+              color={theme.colors.training}
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Firefighter Status"
           description="Personnel availability"
           href="/tracker"
+          permission="member"
           color={theme.colors.status}
-          icon={<Users size={42} color={theme.colors.status} />}
+          icon={
+            <Users
+              size={42}
+              color={theme.colors.status}
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Ice Cream Social"
           description="Fundraiser management"
           href="/icecreamsocial"
+          permission="public"
           color="#ec4899"
-          icon={<IceCreamCone size={42} color="#ec4899" />}
+          icon={
+            <IceCreamCone
+              size={42}
+              color="#ec4899"
+            />
+          }
         />
 
-        <ModuleCard
+        <ModuleTile
           title="Administration"
           description="Templates and settings"
           href="/admin"
+          permission="admin"
           color={theme.colors.admin}
-          icon={<Settings size={42} color={theme.colors.admin} />}
+          icon={
+            <Settings
+              size={42}
+              color={theme.colors.admin}
+            />
+          }
         />
       </div>
     </div>
