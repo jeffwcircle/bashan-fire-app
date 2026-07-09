@@ -711,7 +711,7 @@ style={{
             availableUsers:
               users
           }}
-onDelete={(id) => {
+onDelete={(id: string) => {
 
 if (!allowed) {
     setShowAuthDialog(true);
