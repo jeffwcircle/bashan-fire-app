@@ -1,5 +1,6 @@
 "use client";
 
+import { Timestamp } from "firebase/firestore";
 import { Equipment } from "@/lib/types/equipment";
 import { theme } from "@/lib/theme";
 
@@ -27,10 +28,60 @@ function statusColor(status: string) {
   }
 }
 
+function formatDate(value: any) {
+  if (!value) return "-";
+
+  if (value instanceof Timestamp) {
+    return value.toDate().toLocaleDateString();
+  }
+
+  return "-";
+}
+
+function dueStatus(value: any) {
+  if (!(value instanceof Timestamp)) {
+    return {
+      text: "No Inspection",
+      color: "#6b7280",
+    };
+  }
+
+  const due = value.toDate();
+
+  const today = new Date();
+
+  const days =
+    (due.getTime() - today.getTime()) /
+    (1000 * 60 * 60 * 24);
+
+  if (days < 0) {
+    return {
+      text: "🔴 OVERDUE",
+      color: "#dc2626",
+    };
+  }
+
+  if (days <= 7) {
+    return {
+      text: "🟡 DUE SOON",
+      color: "#d97706",
+    };
+  }
+
+  return {
+    text: "🟢 CURRENT",
+    color: "#16a34a",
+  };
+}
+
 export default function EquipmentCard({
   equipment,
   onClick,
 }: Props) {
+  const inspection = dueStatus(
+    equipment.nextDueDate
+  );
+
   return (
     <div
       onClick={onClick}
@@ -44,12 +95,14 @@ export default function EquipmentCard({
         border: "1px solid transparent",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px)";
+        e.currentTarget.style.transform =
+          "translateY(-4px)";
         e.currentTarget.style.boxShadow =
           "0 12px 24px rgba(0,0,0,.12)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.transform =
+          "translateY(0)";
         e.currentTarget.style.boxShadow =
           theme.shadow.card;
       }}
@@ -124,12 +177,23 @@ export default function EquipmentCard({
         </div>
 
         <div>
-          <strong>Schedule</strong>
+          <strong>Next Inspection</strong>
 
           <br />
 
-          Every {equipment.inspectionInterval}{" "}
-          {equipment.inspectionUnit}
+          {formatDate(
+            equipment.nextDueDate
+          )}
+
+          <div
+            style={{
+              marginTop: 6,
+              color: inspection.color,
+              fontWeight: 700,
+            }}
+          >
+            {inspection.text}
+          </div>
         </div>
       </div>
     </div>

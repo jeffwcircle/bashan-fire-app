@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   addDoc,
   onSnapshot,
   Timestamp,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -15,61 +18,166 @@ import EquipmentCard from "./EquipmentCard";
 import EquipmentForm from "./EquipmentForm";
 
 export default function EquipmentInventory() {
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const router = useRouter();
 
-  useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "equipmentInventory"),
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Equipment),
-        }));
+  const [equipment, setEquipment] =
+    useState<Equipment[]>([]);
 
-        data.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+  const [showForm, setShowForm] =
+    useState(false);
 
-        setEquipment(data);
-      }
-    );
+  const [showRetired, setShowRetired] =
+    useState(false);
 
-    return () => unsub();
-  }, []);
+  const [selectedEquipment, setSelectedEquipment] =
+    useState<Equipment | undefined>();
+
+
+useEffect(() => {
+  const unsub = onSnapshot(
+    collection(db, "equipmentInventory"),
+    (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Equipment),
+      }));
+
+      data.sort((a, b) => {
+        function priority(item: Equipment) {
+          if (item.status === "Retired") return 99;
+
+          if (!item.nextDueDate) return 50;
+
+          const due =
+            item.nextDueDate.toDate();
+
+          const now = new Date();
+
+          const days =
+            (due.getTime() - now.getTime()) /
+            (1000 * 60 * 60 * 24);
+
+          if (days < 0) return 0;
+
+          if (days <= 7) return 1;
+
+          return 2;
+        }
+
+        const p =
+          priority(a) - priority(b);
+
+        if (p !== 0) return p;
+
+        if (
+          a.nextDueDate &&
+          b.nextDueDate
+        ) {
+          return (
+            a.nextDueDate.toDate().getTime() -
+            b.nextDueDate.toDate().getTime()
+          );
+        }
+
+        return a.name.localeCompare(b.name);
+      });
+
+      setEquipment(data);
+    }
+  );
+
+  return () => unsub();
+}, []);
+
 
   async function handleSave(item: Equipment) {
-    await addDoc(
-      collection(db, "equipmentInventory"),
-      {
-        ...item,
-        createdAt: Timestamp.now(),
-      }
-    );
+    if (item.id) {
+      const { id, ...equipmentData } = item;
 
+      await updateDoc(
+        doc(db, "equipmentInventory", id),
+        equipmentData
+      );
+    } else {
+      await addDoc(
+        collection(db, "equipmentInventory"),
+        {
+          ...item,
+          createdAt: Timestamp.now(),
+        }
+      );
+    }
+
+    setSelectedEquipment(undefined);
     setShowForm(false);
   }
+
+  function handleCancel() {
+    setSelectedEquipment(undefined);
+    setShowForm(false);
+  }
+
+  const visibleEquipment = useMemo(() => {
+    if (showRetired) return equipment;
+
+    return equipment.filter(
+      (item) => item.status !== "Retired"
+    );
+  }, [equipment, showRetired]);
 
   return (
     <>
       {!showForm && (
-        <button
-          className="btn btn-success"
-          style={{
-            width: "100%",
-            padding: 16,
-            marginBottom: 24,
-          }}
-          onClick={() => setShowForm(true)}
-        >
-          ➕ Add Equipment
-        </button>
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 16,
+              marginBottom: 24,
+            }}
+          >
+            <button
+              className="btn btn-success"
+              onClick={() => {
+                setSelectedEquipment(undefined);
+                setShowForm(true);
+              }}
+            >
+              ➕ Add Equipment
+            </button>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontWeight: 600,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showRetired}
+                onChange={(e) =>
+                  setShowRetired(
+                    e.target.checked
+                  )
+                }
+              />
+
+              Show Retired Equipment
+            </label>
+          </div>
+        </>
       )}
 
       {showForm && (
         <EquipmentForm
+          initialData={selectedEquipment}
           onSave={handleSave}
-          onCancel={() => setShowForm(false)}
+          onCancel={handleCancel}
         />
       )}
 
@@ -77,10 +185,9 @@ export default function EquipmentInventory() {
         style={{
           display: "grid",
           gap: 20,
-          marginTop: 24,
         }}
       >
-        {equipment.length === 0 ? (
+        {visibleEquipment.length === 0 ? (
           <div
             className="card"
             style={{
@@ -88,13 +195,18 @@ export default function EquipmentInventory() {
               padding: 40,
             }}
           >
-            No equipment has been added yet.
+            No equipment found.
           </div>
         ) : (
-          equipment.map((item) => (
+          visibleEquipment.map((item) => (
             <EquipmentCard
               key={item.id}
               equipment={item}
+              onClick={() =>
+                router.push(
+                  `/equipment/${item.id}`
+                )
+              }
             />
           ))
         )}

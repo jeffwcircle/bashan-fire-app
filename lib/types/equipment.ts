@@ -20,5 +20,8 @@ export interface Equipment {
 
   notes: string;
 
+lastInspectionDate?: any;
+nextDueDate?: any;
+
   createdAt?: string;
 }
