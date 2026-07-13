@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -37,13 +38,18 @@ export interface MaintenanceItem {
 
   createdAt?: any;
 }
+
 export default function MaintenanceInventory() {
-const router = useRouter();
+  const router = useRouter();
+
   const [items, setItems] = useState<
     MaintenanceItem[]
   >([]);
 
   const [showForm, setShowForm] =
+    useState(false);
+
+  const [showRetired, setShowRetired] =
     useState(false);
 
   const [selectedItem, setSelectedItem] =
@@ -102,21 +108,59 @@ const router = useRouter();
     setSelectedItem(undefined);
   }
 
+  const filteredItems = showRetired
+    ? items
+    : items.filter(
+        (item) => item.status !== "Retired"
+      );
+
   return (
     <>
       {!showForm && (
-        <button
-          className="btn btn-success"
-          onClick={() => {
-            setSelectedItem(undefined);
-            setShowForm(true);
-          }}
-          style={{
-            marginBottom: 24,
-          }}
-        >
-          ➕ Add Maintenance Item
-        </button>
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+              flexWrap: "wrap",
+              gap: 16,
+            }}
+          >
+            <button
+              className="btn btn-success"
+              onClick={() => {
+                setSelectedItem(undefined);
+                setShowForm(true);
+              }}
+            >
+              ➕ Add Maintenance Item
+            </button>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showRetired}
+                onChange={(e) =>
+                  setShowRetired(
+                    e.target.checked
+                  )
+                }
+              />
+              Show Retired
+            </label>
+          </div>
+        </>
       )}
 
       {showForm && (
@@ -135,7 +179,7 @@ const router = useRouter();
           gap: 20,
         }}
       >
-        {items.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <div
             className="card"
             style={{
@@ -146,14 +190,16 @@ const router = useRouter();
             No maintenance items.
           </div>
         ) : (
-          items.map((item) => (
-<MaintenanceCard
-  key={item.id}
-  item={item}
-  onClick={() =>
-    router.push(`/maintenance/${item.id}`)
-  }
-/>
+          filteredItems.map((item) => (
+            <MaintenanceCard
+              key={item.id}
+              item={item}
+              onClick={() =>
+                router.push(
+                  `/maintenance/${item.id}`
+                )
+              }
+            />
           ))
         )}
       </div>
