@@ -32,7 +32,7 @@ export default function RecentActivity() {
           b.date.getTime() - a.date.getTime()
       );
 
-      setActivities(all.slice(0, 10));
+      setActivities(all.slice(0, 20));
     }
 
     const equipmentUnsub = onSnapshot(
@@ -114,6 +114,9 @@ export default function RecentActivity() {
         borderRadius: theme.radius.lg,
         boxShadow: theme.shadow.card,
         padding: 24,
+        height: 360,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
@@ -122,6 +125,7 @@ export default function RecentActivity() {
           alignItems: "center",
           gap: 10,
           marginBottom: 18,
+          flexShrink: 0,
         }}
       >
         <History
@@ -148,35 +152,49 @@ export default function RecentActivity() {
           No recent activity.
         </div>
       ) : (
-        activities.map((activity) => (
-          <div
-            key={activity.id}
-            style={{
-              padding: "10px 0",
-              borderBottom:
-                "1px solid #eee",
-            }}
-          >
-            <div
-              style={{
-                fontWeight: 500,
-              }}
-            >
-              {activity.text}
-            </div>
+        <div
+          style={{
+            overflowY: "auto",
+            flex: 1,
+            paddingRight: 8,
+          }}
+        >
+          {activities.map(
+            (activity, index) => (
+              <div
+                key={activity.id}
+                style={{
+                  padding: "10px 0",
+                  borderBottom:
+                    index ===
+                    activities.length - 1
+                      ? "none"
+                      : "1px solid #eee",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 500,
+                  }}
+                >
+                  {activity.text}
+                </div>
 
-            <div
-              style={{
-                fontSize: 13,
-                color:
-                  theme.colors.textLight,
-                marginTop: 2,
-              }}
-            >
-              {activity.date.toLocaleString()}
-            </div>
-          </div>
-        ))
+                <div
+                  style={{
+                    fontSize: 13,
+                    color:
+                      theme.colors
+                        .textLight,
+                    marginTop: 2,
+                  }}
+                >
+                  {activity.date.toLocaleString()}
+                </div>
+              </div>
+            )
+          )}
+        </div>
       )}
     </div>
   );

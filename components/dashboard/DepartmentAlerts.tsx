@@ -135,7 +135,9 @@ export default function DepartmentAlerts() {
         borderRadius: theme.radius.lg,
         boxShadow: theme.shadow.card,
         padding: 24,
-      }}
+display: "flex",
+flexDirection: "column",
+maxHeight: 360,      }}
     >
       <div
         style={{
@@ -143,6 +145,7 @@ export default function DepartmentAlerts() {
           alignItems: "center",
           gap: 10,
           marginBottom: 18,
+          flexShrink: 0,
         }}
       >
         <AlertTriangle
@@ -169,39 +172,49 @@ export default function DepartmentAlerts() {
           🟢 No department alerts.
         </div>
       ) : (
-        alerts.map((alert, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              gap: 16,
-              alignItems: "center",
-              padding: "14px 0",
-              borderBottom:
-                index === alerts.length - 1
-                  ? "none"
-                  : "1px solid #eee",
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                alignSelf: "stretch",
-                background: alert.color,
-                borderRadius: 999,
-              }}
-            />
 
+<div
+  style={{
+    overflowY: "auto",
+    maxHeight: 270,
+    paddingRight: 8,
+  }}
+>
+
+          {alerts.map((alert, index) => (
             <div
+              key={index}
               style={{
-                fontSize: 16,
-                fontWeight: 500,
+                display: "flex",
+                gap: 16,
+                alignItems: "center",
+                padding: "14px 0",
+                borderBottom:
+                  index === alerts.length - 1
+                    ? "none"
+                    : "1px solid #eee",
               }}
             >
-              {alert.title}
+              <div
+                style={{
+                  width: 6,
+                  alignSelf: "stretch",
+                  background: alert.color,
+                  borderRadius: 999,
+                }}
+              />
+
+              <div
+                style={{
+                  fontSize: 16,
+                  fontWeight: 500,
+                }}
+              >
+                {alert.title}
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

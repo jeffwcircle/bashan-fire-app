@@ -1,15 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import {
-  Truck,
-  ClipboardList,
-  Users,
-  AlertTriangle,
-} from "lucide-react";
 
 import { theme } from "@/lib/theme";
-import StatCard from "@/components/ui/StatCard";
+import HeaderConditions from "@/components/dashboard/HeaderConditions";
 
 interface Props {
   userName?: string;
@@ -27,6 +21,10 @@ export default function DashboardHeader({
         boxShadow: theme.shadow.card,
         padding: 32,
         marginBottom: 28,
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        gap: 32,
+        alignItems: "center",
       }}
     >
       {/* LEFT */}
@@ -100,61 +98,24 @@ export default function DashboardHeader({
 
       {/* RIGHT */}
 
-      <div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: 12,
+        }}
+      >
         <h3
           style={{
-            marginTop: 0,
-            marginBottom: 16,
+            margin: 0,
+            color: theme.colors.text,
           }}
         >
-          Department Overview
+          Current Conditions
         </h3>
 
-        <div className="dashboard-stats">
-          <StatCard
-            title="Apparatus"
-            value={12}
-            icon={
-              <Truck
-                size={22}
-                color={theme.colors.truck}
-              />
-            }
-          />
-
-          <StatCard
-            title="Logs"
-            value={37}
-            icon={
-              <ClipboardList
-                size={22}
-                color={theme.colors.maintenance}
-              />
-            }
-          />
-
-          <StatCard
-            title="Members"
-            value={26}
-            icon={
-              <Users
-                size={22}
-                color={theme.colors.training}
-              />
-            }
-          />
-
-          <StatCard
-            title="Issues"
-            value={3}
-            icon={
-              <AlertTriangle
-                size={22}
-                color={theme.colors.equipment}
-              />
-            }
-          />
-        </div>
+        <HeaderConditions />
       </div>
     </div>
   );

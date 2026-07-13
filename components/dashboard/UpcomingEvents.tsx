@@ -3,6 +3,13 @@
 import { CalendarDays } from "lucide-react";
 import { theme } from "@/lib/theme";
 
+const events = [
+  {
+    title: "No upcoming events",
+    date: "Add events later",
+  },
+];
+
 export default function UpcomingEvents() {
   return (
     <div
@@ -11,6 +18,9 @@ export default function UpcomingEvents() {
         borderRadius: theme.radius.lg,
         boxShadow: theme.shadow.card,
         padding: 24,
+        height: 360,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
@@ -19,6 +29,7 @@ export default function UpcomingEvents() {
           alignItems: "center",
           gap: 10,
           marginBottom: 18,
+          flexShrink: 0,
         }}
       >
         <CalendarDays
@@ -36,14 +47,44 @@ export default function UpcomingEvents() {
         </h2>
       </div>
 
-      <p
+      <div
         style={{
-          margin: 0,
-          color: theme.colors.textLight,
+          overflowY: "auto",
+          flex: 1,
+          paddingRight: 8,
         }}
       >
-        Upcoming department events will appear here.
-      </p>
+        {events.map((event, index) => (
+          <div
+            key={index}
+            style={{
+              padding: "10px 0",
+              borderBottom:
+                index === events.length - 1
+                  ? "none"
+                  : "1px solid #eee",
+            }}
+          >
+            <div
+              style={{
+                fontWeight: 500,
+              }}
+            >
+              {event.title}
+            </div>
+
+            <div
+              style={{
+                fontSize: 13,
+                color: theme.colors.textLight,
+                marginTop: 2,
+              }}
+            >
+              {event.date}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

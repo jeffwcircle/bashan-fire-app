@@ -29,7 +29,6 @@ export default function CommandCenter() {
         }}
       >
         <DepartmentAlerts />
-        <Conditions />
       </div>
 
       {/* Activity + Events */}
