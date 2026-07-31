@@ -8,6 +8,7 @@ import {
   Users,
   IceCreamCone,
   Settings,
+  CalendarDays,
 } from "lucide-react";
 
 import ModuleTile from "@/components/dashboard/ModuleTile";
@@ -119,6 +120,20 @@ export default function DashboardModules() {
             />
           }
         />
+
+<ModuleTile
+  title="Events"
+  description="Department meetings and activities"
+  href="/events"
+  permission="member"
+  color="#2563eb"
+  icon={
+    <CalendarDays
+      size={42}
+      color="#2563eb"
+    />
+  }
+/>
 
         <ModuleTile
           title="Firefighter Status"
