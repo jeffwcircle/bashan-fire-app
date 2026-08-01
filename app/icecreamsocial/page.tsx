@@ -70,15 +70,19 @@ export default function IceCreamPage() {
   return (
     <div style={{ padding: 20, minHeight: "100vh" }}>
       {/* HEADER */}
-      <h1
-        style={{
-          textAlign: "center",
-          fontSize: 40
-        }}
-      >
-        Bashan Volunteer Fire Department
-      </h1>
-
+<h1
+  onClick={() => router.push("/")}
+  style={{
+    textAlign: "center",
+    fontSize: 40,
+    fontWeight: "bold",
+    color: "black",
+    cursor: "pointer",
+    userSelect: "none",
+  }}
+>
+  Bashan Volunteer Fire Department
+</h1>
       <h2
         style={{
           textAlign: "center",
@@ -194,26 +198,7 @@ export default function IceCreamPage() {
         </div>
       </div>
 
-      {/* BACK BUTTON */}
-      <div
-        style={{
-          marginTop: 30,
-          textAlign: "center"
-        }}
-      >
-        <button
-          onClick={() => router.push("/")}
-          style={{
-            padding: "12px 20px",
-            fontSize: 16,
-            borderRadius: 6,
-            background: "#1565c0",
-            color: "white"
-          }}
-        >
-          ⬅ Back
-        </button>
-      </div>
+
     </div>
   );
 }

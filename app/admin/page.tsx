@@ -69,6 +69,13 @@ export default function AdminHome() {
         <strong>{profile.role}</strong>.
       </p>
 
+<div
+  style={cardStyle}
+  onClick={() => router.push("/admin/members")}
+>
+  👥 Member Management
+</div>
+
       <div
         style={cardStyle}
         onClick={() => router.push("/admin/trucks")}
