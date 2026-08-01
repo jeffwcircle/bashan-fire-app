@@ -101,9 +101,45 @@ export default function RecentActivity() {
       }
     );
 
+const truckUnsub = onSnapshot(
+  query(
+    collection(db, "truckLogs"),
+    orderBy("createdAt", "desc"),
+    limit(10)
+  ),
+  (snapshot) => {
+    const items = snapshot.docs.map((doc) => {
+      const data: any = doc.data();
+
+      return {
+        id: `truck-${doc.id}`,
+        text: `🚒 Truck Check: ${data.truck}`,
+        date:
+          typeof data.createdAt === "string"
+            ? new Date(data.createdAt)
+            : data.createdAt?.toDate?.() ??
+              new Date(),
+      };
+    });
+
+    const filtered = all.filter(
+      (a) => !a.id.startsWith("truck-")
+    );
+
+    filtered.push(...items);
+
+    all.length = 0;
+    all.push(...filtered);
+
+    update();
+  }
+);
+
+
     return () => {
       equipmentUnsub();
       maintenanceUnsub();
+      truckUnsub();
     };
   }, []);
 
