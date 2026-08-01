@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function DashboardHeader({
-  userName = "Jeff Circle",
+  userName,
 }: Props) {
   return (
     <div

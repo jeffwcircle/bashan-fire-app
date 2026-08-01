@@ -42,6 +42,8 @@ export function AuthProvider({
 
       setSession(session);
       setUser(session?.user ?? null);
+console.log("AUTH USER:", session?.user?.email);
+console.log("AUTH ID:", session?.user?.id);
       setLoading(false);
     }
 
@@ -53,6 +55,8 @@ export function AuthProvider({
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+console.log("AUTH USER:", session?.user?.email);
+console.log("AUTH ID:", session?.user?.id);
         setLoading(false);
       }
     );
