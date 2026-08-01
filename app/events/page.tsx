@@ -1,28 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
+import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/ui/PageHeader";
 import EventsInventory from "@/components/events/EventsInventory";
 
 export default function EventsPage() {
+  const router = useRouter();
+
   return (
-    <main
-      style={{
-        maxWidth: 1400,
-        margin: "0 auto",
-        padding: 24,
-      }}
-    >
-      <h1
-        style={{
-          marginTop: 0,
-          marginBottom: 24,
-          fontSize: 36,
-          fontWeight: 700,
-        }}
-      >
-        Department Events
-      </h1>
+    <PageContainer>
+      <PageHeader
+        title="Events"
+        subtitle="Manage department meetings and events."
+        onBack={() => router.push("/")}
+      />
 
       <EventsInventory />
-    </main>
+    </PageContainer>
   );
 }

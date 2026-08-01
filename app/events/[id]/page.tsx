@@ -9,6 +9,8 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
+import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/ui/PageHeader";
 
 interface EventItem {
   title: string;
@@ -20,7 +22,6 @@ interface EventItem {
 
 export default function EventDetailsPage() {
   const { id } = useParams<{ id: string }>();
-
   const router = useRouter();
 
   const [event, setEvent] =
@@ -69,39 +70,36 @@ export default function EventDetailsPage() {
 
   if (loading) {
     return (
-      <main
-        style={{
-          padding: 24,
-        }}
-      >
-        Loading...
-      </main>
+      <PageContainer>
+        <PageHeader
+          title="Loading..."
+          subtitle=""
+          onBack={() =>
+            router.push("/events")
+          }
+        />
+      </PageContainer>
     );
   }
 
   if (!event) return null;
 
   return (
-    <main
-      style={{
-        maxWidth: 900,
-        margin: "0 auto",
-        padding: 24,
-      }}
-    >
-      <h1
-        style={{
-          marginTop: 0,
-        }}
-      >
-        {event.title}
-      </h1>
+    <PageContainer>
+      <PageHeader
+        title={event.title}
+        subtitle="Department Event"
+	backLabel="Events"
+        onBack={() =>
+          router.push("/events")
+        }
+      />
 
       <div
         style={{
           display: "grid",
-          gap: 20,
-          marginTop: 30,
+          gap: 24,
+          maxWidth: 800,
         }}
       >
         <Info
@@ -123,44 +121,36 @@ export default function EventDetailsPage() {
           label="Description"
           value={event.description}
         />
-      </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 16,
-          marginTop: 40,
-        }}
-      >
-        <button
-          onClick={() =>
-            router.push(
-              `/events/${id}/edit`
-            )
-          }
-        >
-          ✏️ Edit Event
-        </button>
-
-        <button
-          onClick={deleteEvent}
+        <div
           style={{
-            background: "#dc2626",
-            color: "white",
+            display: "flex",
+            gap: 12,
+            marginTop: 12,
           }}
         >
-          🗑 Delete Event
-        </button>
+          <button
+            onClick={() =>
+              router.push(
+                `/events/${id}/edit`
+              )
+            }
+          >
+            ✏️ Edit Event
+          </button>
 
-        <button
-          onClick={() =>
-            router.push("/events")
-          }
-        >
-          ← Back
-        </button>
+          <button
+            onClick={deleteEvent}
+            style={{
+              background: "#dc2626",
+              color: "white",
+            }}
+          >
+            🗑 Delete Event
+          </button>
+        </div>
       </div>
-    </main>
+    </PageContainer>
   );
 }
 
@@ -176,13 +166,15 @@ function Info({
       <div
         style={{
           fontWeight: 700,
-          marginBottom: 4,
+          marginBottom: 6,
         }}
       >
         {label}
       </div>
 
-      <div>{value || "-"}</div>
+      <div>
+        {value || "-"}
+      </div>
     </div>
   );
 }

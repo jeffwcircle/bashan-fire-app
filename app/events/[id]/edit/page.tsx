@@ -9,14 +9,12 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
+import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/ui/PageHeader";
 
-interface EventItem {
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  description: string;
-}
+import EventForm, {
+  EventFormValues,
+} from "@/components/events/EventForm";
 
 export default function EditEventPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,14 +23,17 @@ export default function EditEventPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
+  const [initialValues, setInitialValues] =
+    useState<EventFormValues>({
+      title: "",
+      date: "",
+      time: "",
+      location: "",
+      description: "",
+    });
 
   useEffect(() => {
-    async function load() {
+    async function loadEvent() {
       try {
         const snap = await getDoc(
           doc(db, "upcomingEvents", id)
@@ -43,54 +44,43 @@ export default function EditEventPage() {
           return;
         }
 
-        const data = snap.data() as EventItem;
+        const data = snap.data();
 
-        setTitle(data.title ?? "");
-        setDate(data.date ?? "");
-        setTime(data.time ?? "");
-        setLocation(data.location ?? "");
-        setDescription(data.description ?? "");
+        setInitialValues({
+          title: data.title ?? "",
+          date: data.date ?? "",
+          time: data.time ?? "",
+          location: data.location ?? "",
+          description: data.description ?? "",
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Unable to load event.");
       } finally {
         setLoading(false);
       }
     }
 
-    load();
+    loadEvent();
   }, [id, router]);
 
-  async function save(
-    e: React.FormEvent
+  async function saveEvent(
+    values: EventFormValues
   ) {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      alert("Please enter a title.");
-      return;
-    }
-
-    if (!date) {
-      alert("Please choose a date.");
-      return;
-    }
-
     try {
       setSaving(true);
 
       await updateDoc(
         doc(db, "upcomingEvents", id),
         {
-          title,
-          date,
-          time,
-          location,
-          description,
+          ...values,
         }
       );
 
       router.push(`/events/${id}`);
     } catch (err) {
       console.error(err);
-      alert("Unable to save changes.");
+      alert("Unable to save event.");
     } finally {
       setSaving(false);
     }
@@ -98,135 +88,38 @@ export default function EditEventPage() {
 
   if (loading) {
     return (
-      <main
-        style={{
-          padding: 24,
-        }}
-      >
-        Loading...
-      </main>
+      <PageContainer>
+        <PageHeader
+          title="Loading..."
+          subtitle=""
+          onBack={() =>
+            router.push(`/events/${id}`)
+          }
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <main
-      style={{
-        maxWidth: 700,
-        margin: "0 auto",
-        padding: 24,
-      }}
-    >
-      <h1>Edit Event</h1>
+    <PageContainer>
+      <PageHeader
+        title="Edit Event"
+        subtitle="Update department event information."
+	backLabel="Event"
+        onBack={() =>
+          router.push(`/events/${id}`)
+        }
+      />
 
-      <form
-        onSubmit={save}
-        style={{
-          display: "grid",
-          gap: 20,
-        }}
-      >
-        <div>
-          <label>Title</label>
-
-          <input
-            value={title}
-            onChange={(e) =>
-              setTitle(e.target.value)
-            }
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label>Date</label>
-
-          <input
-            type="date"
-            value={date}
-            onChange={(e) =>
-              setDate(e.target.value)
-            }
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label>Time</label>
-
-          <input
-            type="time"
-            value={time}
-            onChange={(e) =>
-              setTime(e.target.value)
-            }
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label>Location</label>
-
-          <input
-            value={location}
-            onChange={(e) =>
-              setLocation(e.target.value)
-            }
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label>Description</label>
-
-          <textarea
-            rows={5}
-            value={description}
-            onChange={(e) =>
-              setDescription(
-                e.target.value
-              )
-            }
-            style={{
-              ...inputStyle,
-              resize: "vertical",
-            }}
-          />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-          }}
-        >
-          <button
-            type="submit"
-            disabled={saving}
-          >
-            {saving
-              ? "Saving..."
-              : "Save Changes"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              router.push(`/events/${id}`)
-            }
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </main>
+      <EventForm
+        initialValues={initialValues}
+        saving={saving}
+        submitText="Save Changes"
+        onSubmit={saveEvent}
+        onCancel={() =>
+          router.push(`/events/${id}`)
+        }
+      />
+    </PageContainer>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "10px",
-  marginTop: "6px",
-  borderRadius: "8px",
-  border: "1px solid #d1d5db",
-  fontSize: "16px",
-} as const;

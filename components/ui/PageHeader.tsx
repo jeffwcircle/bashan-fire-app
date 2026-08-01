@@ -3,7 +3,10 @@ interface Props {
   subtitle: string;
   count?: number;
   countLabel?: string;
+
   onBack?: () => void;
+
+  backLabel?: string;
 }
 
 export default function PageHeader({
@@ -12,6 +15,7 @@ export default function PageHeader({
   count,
   countLabel,
   onBack,
+  backLabel = "Dashboard",
 }: Props) {
   return (
     <>
@@ -69,7 +73,7 @@ export default function PageHeader({
               className="btn btn-secondary"
               onClick={onBack}
             >
-              ← Dashboard
+              ← {backLabel}
             </button>
           )}
         </div>
