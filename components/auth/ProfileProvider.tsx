@@ -16,6 +16,7 @@ interface Profile {
   first_name: string;
   last_name: string;
   role: string;
+  role_id: number;
 }
 
 interface ProfileContextType {
@@ -49,7 +50,7 @@ export function ProfileProvider({
 
     const { data } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, role")
+      .select("id, first_name, last_name, role, role_id")
       .eq("id", user.id)
       .single();
 
