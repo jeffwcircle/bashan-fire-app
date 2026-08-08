@@ -17,6 +17,11 @@ export default function Home() {
             ? `${profile.first_name} ${profile.last_name}`
             : undefined
         }
+	userRole={
+	  profile
+	    ? `${profile.role}`
+	    : undefined
+	}
       />
 
       <CommandCenter />

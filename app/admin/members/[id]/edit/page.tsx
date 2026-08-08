@@ -66,12 +66,39 @@ export default function EditMemberPage() {
     try {
       setSaving(true);
 
+      /*
+       * Find the database role ID that corresponds
+       * to the role selected in the form.
+       */
+      const {
+        data: roleData,
+        error: roleError,
+      } = await supabase
+        .from("roles")
+        .select("id, name")
+        .eq("name", values.role)
+        .single();
+
+      if (roleError || !roleData) {
+        console.error(roleError);
+        alert(
+          `Unable to find the database role for "${values.role}".`
+        );
+        return;
+      }
+
+      /*
+       * Update both the old role field and the new
+       * role_id field while we are transitioning
+       * the application to RBAC.
+       */
       const { error } = await supabase
         .from("profiles")
         .update({
           first_name: values.first_name,
           last_name: values.last_name,
           role: values.role,
+          role_id: roleData.id,
           active: values.active,
           is_firefighter: values.is_firefighter,
         })

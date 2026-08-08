@@ -6,12 +6,7 @@ import { Lock } from "lucide-react";
 
 import ModuleCard from "@/components/ui/ModuleCard";
 import AuthDialog from "@/components/auth/AuthDialog";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { useProfile } from "@/components/auth/ProfileProvider";
-import {
-  canAccessAdmin,
-  canEdit,
-} from "@/lib/permissions";
+import { usePermissions } from "@/components/auth/PermissionProvider";
 
 interface Props {
   title: string;
@@ -19,7 +14,7 @@ interface Props {
   href: string;
   color: string;
   icon: React.ReactNode;
-  permission?: "public" | "member" | "admin";
+  permission?: string;
 }
 
 export default function ModuleTile({
@@ -32,27 +27,19 @@ export default function ModuleTile({
 }: Props) {
   const router = useRouter();
 
-  const { user } = useAuth();
-  const { profile } = useProfile();
+  const { loading, can } = usePermissions();
 
   const [showDialog, setShowDialog] =
     useState(false);
 
-  let allowed = true;
-
-  switch (permission) {
-    case "member":
-      allowed =
-        !!user &&
-        canEdit(profile?.role);
-      break;
-
-    case "admin":
-      allowed =
-        !!user &&
-        canAccessAdmin(profile?.role);
-      break;
-  }
+  /*
+   * Public modules are always available.
+   * Everything else is checked against RBAC.
+   */
+  const allowed =
+    permission === "public"
+      ? true
+      : !loading && can(permission);
 
   function handleClick() {
     if (!allowed) {
@@ -63,24 +50,29 @@ export default function ModuleTile({
     router.push(href);
   }
 
+  /*
+   * While permissions are loading, don't
+   * accidentally show a module as available.
+   */
+  const isLocked =
+    permission !== "public" && !allowed;
+
   return (
     <>
       <div onClick={handleClick}>
-<ModuleCard
-  title={title}
-  description={description}
-  href="#"
-  color={color}
-  icon={icon}
-  locked={!allowed}
-  badge={
-    !allowed
-      ? permission === "admin"
-        ? "Administrator Only"
-        : "Member Access"
-      : undefined
-  }
-/>
+        <ModuleCard
+          title={title}
+          description={description}
+          href="#"
+          color={color}
+          icon={icon}
+          locked={isLocked}
+          badge={
+            isLocked
+              ? "Access Restricted"
+              : undefined
+          }
+        />
       </div>
 
       <AuthDialog

@@ -69,7 +69,7 @@ export default function DashboardModules() {
           title="Truck Check"
           description="Monthly apparatus inspections"
           href="/truckcheck"
-          permission="member"
+          permission="truck_checks"
           color={theme.colors.truck}
           icon={
             <Truck
@@ -83,7 +83,7 @@ export default function DashboardModules() {
           title="Equipment"
           description="Equipment testing and inspections"
           href="/equipment"
-          permission="member"
+          permission="equipment"
           color={theme.colors.equipment}
           icon={
             <Package
@@ -97,7 +97,7 @@ export default function DashboardModules() {
           title="Maintenance"
           description="Vehicle maintenance records"
           href="/maintenance"
-          permission="member"
+          permission="maintenance"
           color={theme.colors.maintenance}
           icon={
             <Wrench
@@ -111,7 +111,7 @@ export default function DashboardModules() {
           title="Training"
           description="Department training records"
           href="/training"
-          permission="member"
+          permission="training"
           color={theme.colors.training}
           icon={
             <BookOpen
@@ -125,7 +125,7 @@ export default function DashboardModules() {
   title="Events"
   description="Department meetings and activities"
   href="/events"
-  permission="member"
+  permission="events"
   color="#2563eb"
   icon={
     <CalendarDays
@@ -139,7 +139,7 @@ export default function DashboardModules() {
           title="Firefighter Status"
           description="Personnel availability"
           href="/tracker"
-          permission="member"
+          permission="firefighter_status"
           color={theme.colors.status}
           icon={
             <Users
@@ -167,7 +167,7 @@ export default function DashboardModules() {
           title="Administration"
           description="Templates and settings"
           href="/admin"
-          permission="admin"
+          permission="administration"
           color={theme.colors.admin}
           icon={
             <Settings

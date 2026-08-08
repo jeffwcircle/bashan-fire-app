@@ -7,10 +7,11 @@ import HeaderConditions from "@/components/dashboard/HeaderConditions";
 
 interface Props {
   userName?: string;
+  userRole?: string;
 }
 
 export default function DashboardHeader({
-  userName,
+  userName,userRole,
 }: Props) {
   return (
     <div
@@ -91,7 +92,8 @@ export default function DashboardHeader({
               color: theme.colors.text,
             }}
           >
-            Welcome back, {userName}
+            Welcome back, {userName}<br />
+	    <small>Role: {userRole}</small>
           </div>
         </div>
       </div>

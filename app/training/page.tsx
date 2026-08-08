@@ -2,16 +2,24 @@
 
 import { useRouter } from "next/navigation";
 
-export default function Maintenance() {
+import RequirePermission from "@/components/auth/RequirePermission";
+
+export default function Training() {
   const router = useRouter();
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Maintenance Logs</h1>
+    <RequirePermission permission="training">
+      <div style={{ padding: 20 }}>
+        <h1>Training Logs</h1>
 
-      <button onClick={() => router.push("/")}>⬅ Back</button>
+        <button onClick={() => router.push("/")}>
+          ⬅ Back
+        </button>
 
-      <p>This is where your training logs will go.</p>
-    </div>
+        <p>
+          This is where your training logs will go.
+        </p>
+      </div>
+    </RequirePermission>
   );
 }
