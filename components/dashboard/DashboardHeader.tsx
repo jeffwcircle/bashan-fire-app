@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { theme } from "@/lib/theme";
 import HeaderConditions from "@/components/dashboard/HeaderConditions";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface Props {
   userName?: string;
@@ -11,8 +13,21 @@ interface Props {
 }
 
 export default function DashboardHeader({
-  userName,userRole,
+  userName,
+  userRole,
 }: Props) {
+  const router = useRouter();
+  const { user, signOut } = useAuth();
+
+  async function handleAuthClick() {
+    if (user) {
+      await signOut();
+      return;
+    }
+
+    router.push("/login");
+  }
+
   return (
     <div
       className="dashboard-header"
@@ -92,22 +107,47 @@ export default function DashboardHeader({
               color: theme.colors.text,
             }}
           >
-            Welcome back, {userName}<br />
-	    <small>Role: {userRole}</small>
+            Welcome back, {userName}
+            <br />
+            <small>
+              Role: {userRole}
+            </small>
           </div>
         </div>
       </div>
 
       {/* RIGHT */}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: 12,
-        }}
-      >
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 12,
+    transform: "translateY(-10px)",
+  }}
+>
+        {/* LOGIN / LOGOUT BUTTON */}
+
+        <button
+          type="button"
+          onClick={handleAuthClick}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 7,
+            border: "none",
+            background: theme.colors.primary,
+            color: "white",
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          {user ? "Log Out" : "Log In"}
+        </button>
+
+        {/* CURRENT CONDITIONS */}
+
         <h3
           style={{
             margin: 0,

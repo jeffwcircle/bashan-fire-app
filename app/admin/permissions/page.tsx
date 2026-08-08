@@ -365,20 +365,19 @@ export default function PermissionsPage() {
       setNewRoleName("");
       setNewRoleDescription("");
       setShowAddRole(false);
-    } catch (err: any) {
-      console.error(
-        "Error adding role:",
-        err
-      );
+} catch (err: any) {
+  console.error("Error adding role:", err);
+  console.error("Error message:", err?.message);
+  console.error("Error details:", err?.details);
+  console.error("Error hint:", err?.hint);
+  console.error("Error code:", err?.code);
 
-      alert(
-        err?.message ||
-          "Unable to add role."
-      );
-    } finally {
-      setSaving(null);
-    }
-  }
+  alert(
+    err?.message ||
+      err?.details ||
+      "Unable to add role. Check the browser console for details."
+  );
+}  }
 
   // --------------------------------------------------
   // ADD PERMISSION

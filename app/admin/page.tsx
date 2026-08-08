@@ -63,6 +63,7 @@ export default function AdminHome() {
 	</div>
         )}
 
+	{can("administration_truck_checks") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -71,7 +72,9 @@ export default function AdminHome() {
         >
           🚒 Truck Management
         </div>
+	)}
 
+	{can("administration_equipment") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -80,7 +83,9 @@ export default function AdminHome() {
         >
           🧰 Equipment Management
         </div>
+	)}
 
+	{can("administration_maintenance") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -89,7 +94,9 @@ export default function AdminHome() {
         >
           🔧 Maintenance Logs
         </div>
+	)}
 
+	{can("administration_training") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -98,7 +105,9 @@ export default function AdminHome() {
         >
           📘 Training Logs
         </div>
+	)}
 
+	{can("events_planner") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -109,7 +118,9 @@ export default function AdminHome() {
         >
           🍦 Ice Cream Social
         </div>
+	)}
 
+	{can("events_planner") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -118,6 +129,8 @@ export default function AdminHome() {
         >
           📷 Photo Upload
         </div>
+	)}
+
       </div>
     </RequirePermission>
   );

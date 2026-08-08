@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export interface MemberFormValues {
   first_name: string;
@@ -10,6 +11,12 @@ export interface MemberFormValues {
   role: string;
   active: boolean;
   is_firefighter: boolean;
+}
+
+interface Role {
+  id: number;
+  name: string;
+  description?: string | null;
 }
 
 interface Props {
@@ -32,18 +39,6 @@ const emptyValues: MemberFormValues = {
   is_firefighter: true,
 };
 
-const roles = [
-  "Admin",
-  "Chief",
-  "Assistant Chief",
-  "Captain",
-  "Lieutenant",
-  "Firefighter",
-  "Jr Firefighter",
-  "Auxiliary",
-  "Member",
-];
-
 export default function MemberForm({
   initialValues = emptyValues,
   saving = false,
@@ -52,13 +47,77 @@ export default function MemberForm({
   onCancel,
 }: Props) {
   const [values, setValues] =
-    useState<MemberFormValues>(initialValues);
+    useState<MemberFormValues>(
+      initialValues
+    );
+
+  const [roles, setRoles] =
+    useState<Role[]>([]);
+
+  const [loadingRoles, setLoadingRoles] =
+    useState(true);
+
+  const [roleError, setRoleError] =
+    useState<string | null>(null);
+
+  // --------------------------------------------------
+  // LOAD ROLES FROM DATABASE
+  // --------------------------------------------------
+
+  useEffect(() => {
+    loadRoles();
+  }, []);
+
+  async function loadRoles() {
+    try {
+      setLoadingRoles(true);
+      setRoleError(null);
+
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("roles")
+        .select(
+          "id, name, description"
+        )
+        .order("id", {
+          ascending: true,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setRoles(
+        (data || []) as Role[]
+      );
+    } catch (err: any) {
+      console.error(
+        "Error loading roles:",
+        err
+      );
+
+      setRoleError(
+        err?.message ||
+          "Unable to load roles."
+      );
+    } finally {
+      setLoadingRoles(false);
+    }
+  }
+
+  // --------------------------------------------------
+  // UPDATE FORM VALUES
+  // --------------------------------------------------
 
   useEffect(() => {
     setValues(initialValues);
   }, [initialValues]);
 
-  function update<K extends keyof MemberFormValues>(
+  function update<
+    K extends keyof MemberFormValues
+  >(
     field: K,
     value: MemberFormValues[K]
   ) {
@@ -68,36 +127,60 @@ export default function MemberForm({
     }));
   }
 
+  // --------------------------------------------------
+  // SUBMIT
+  // --------------------------------------------------
+
   async function handleSubmit(
     e: React.FormEvent
   ) {
     e.preventDefault();
 
     if (!values.first_name.trim()) {
-      alert("First name is required.");
+      alert(
+        "First name is required."
+      );
       return;
     }
 
     if (!values.last_name.trim()) {
-      alert("Last name is required.");
+      alert(
+        "Last name is required."
+      );
       return;
     }
 
     if (!values.email.trim()) {
-      alert("Email is required.");
+      alert(
+        "Email is required."
+      );
       return;
     }
 
     if (
-      submitText === "Create Member" &&
+      submitText ===
+        "Create Member" &&
       !values.password.trim()
     ) {
-      alert("Temporary password is required.");
+      alert(
+        "Temporary password is required."
+      );
+      return;
+    }
+
+    if (!values.role) {
+      alert(
+        "Please select a role."
+      );
       return;
     }
 
     await onSubmit(values);
   }
+
+  // --------------------------------------------------
+  // PAGE
+  // --------------------------------------------------
 
   return (
     <form
@@ -108,11 +191,17 @@ export default function MemberForm({
         gap: 20,
       }}
     >
+      {/* FIRST NAME */}
+
       <div>
-        <label>First Name</label>
+        <label>
+          First Name
+        </label>
 
         <input
-          value={values.first_name}
+          value={
+            values.first_name
+          }
           onChange={(e) =>
             update(
               "first_name",
@@ -123,11 +212,17 @@ export default function MemberForm({
         />
       </div>
 
+      {/* LAST NAME */}
+
       <div>
-        <label>Last Name</label>
+        <label>
+          Last Name
+        </label>
 
         <input
-          value={values.last_name}
+          value={
+            values.last_name
+          }
           onChange={(e) =>
             update(
               "last_name",
@@ -138,25 +233,40 @@ export default function MemberForm({
         />
       </div>
 
+      {/* EMAIL */}
+
       <div>
-        <label>Email</label>
+        <label>
+          Email
+        </label>
 
         <input
           type="email"
-          value={values.email}
+          value={
+            values.email
+          }
           onChange={(e) =>
-            update("email", e.target.value)
+            update(
+              "email",
+              e.target.value
+            )
           }
           style={inputStyle}
         />
       </div>
 
+      {/* PASSWORD */}
+
       <div>
-        <label>Temporary Password</label>
+        <label>
+          Temporary Password
+        </label>
 
         <input
           type="password"
-          value={values.password}
+          value={
+            values.password
+          }
           onChange={(e) =>
             update(
               "password",
@@ -167,26 +277,97 @@ export default function MemberForm({
         />
       </div>
 
-      <div>
-        <label>Role</label>
+      {/* ROLE */}
 
-        <select
-          value={values.role}
-          onChange={(e) =>
-            update("role", e.target.value)
-          }
-          style={inputStyle}
-        >
-          {roles.map((role) => (
-            <option
-              key={role}
-              value={role}
+      <div>
+        <label>
+          Role
+        </label>
+
+        {loadingRoles ? (
+          <div
+            style={{
+              marginTop: 6,
+              padding: 12,
+              border:
+                "1px solid #d1d5db",
+              borderRadius: 8,
+              color: "#666",
+              background:
+                "#f9fafb",
+            }}
+          >
+            Loading roles...
+          </div>
+        ) : roleError ? (
+          <div
+            style={{
+              marginTop: 6,
+              padding: 12,
+              border:
+                "1px solid #fca5a5",
+              borderRadius: 8,
+              color: "#b91c1c",
+              background:
+                "#fef2f2",
+            }}
+          >
+            Unable to load roles.
+
+            <div
+              style={{
+                fontSize: 13,
+                marginTop: 4,
+              }}
             >
-              {role}
+              {roleError}
+            </div>
+
+            <button
+              type="button"
+              onClick={loadRoles}
+              style={{
+                marginTop: 8,
+                padding:
+                  "6px 12px",
+                cursor: "pointer",
+              }}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <select
+            value={
+              values.role
+            }
+            onChange={(e) =>
+              update(
+                "role",
+                e.target.value
+              )
+            }
+            style={inputStyle}
+          >
+            <option value="">
+              Select a role
             </option>
-          ))}
-        </select>
+
+            {roles.map(
+              (role) => (
+                <option
+                  key={role.id}
+                  value={role.name}
+                >
+                  {role.name}
+                </option>
+              )
+            )}
+          </select>
+        )}
       </div>
+
+      {/* ACTIVE */}
 
       <label
         style={{
@@ -198,7 +379,9 @@ export default function MemberForm({
       >
         <input
           type="checkbox"
-          checked={values.active}
+          checked={
+            values.active
+          }
           onChange={(e) =>
             update(
               "active",
@@ -210,6 +393,8 @@ export default function MemberForm({
         Active Member
       </label>
 
+      {/* FIREFIGHTER */}
+
       <label
         style={{
           display: "flex",
@@ -220,7 +405,9 @@ export default function MemberForm({
       >
         <input
           type="checkbox"
-          checked={values.is_firefighter}
+          checked={
+            values.is_firefighter
+          }
           onChange={(e) =>
             update(
               "is_firefighter",
@@ -229,8 +416,12 @@ export default function MemberForm({
           }
         />
 
-        Firefighter (appears on status board)
+        Firefighter
+        (appears on status
+        board)
       </label>
+
+      {/* BUTTONS */}
 
       <div
         style={{
@@ -241,7 +432,11 @@ export default function MemberForm({
         <button
           className="btn btn-primary"
           type="submit"
-          disabled={saving}
+          disabled={
+            saving ||
+            loadingRoles ||
+            roles.length === 0
+          }
         >
           {saving
             ? "Saving..."
@@ -265,6 +460,7 @@ const inputStyle = {
   padding: "12px",
   marginTop: "6px",
   borderRadius: "8px",
-  border: "1px solid #d1d5db",
+  border:
+    "1px solid #d1d5db",
   fontSize: "16px",
 } as const;
