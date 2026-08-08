@@ -19,7 +19,7 @@ export default function IceCreamPage() {
       (snap) => {
         const data = snap.docs.map((d) => ({
           id: d.id,
-          ...(d.data() as any)
+          ...(d.data() as any),
         }));
 
         setItems(data);
@@ -35,8 +35,8 @@ export default function IceCreamPage() {
       collection(db, "iceCreamImages"),
       (snap) => {
         const data = snap.docs
-	  .map((d) => d.data())
-	  .filter((img: any) => img.visible !== false);
+          .map((d) => d.data())
+          .filter((img: any) => img.visible !== false);
 
         setImages(data);
       }
@@ -60,33 +60,53 @@ export default function IceCreamPage() {
 
   // GROUP ITEMS
   const grouped = items.reduce((acc: any, item) => {
-    if (!acc[item.size]) acc[item.size] = [];
+    if (!acc[item.size]) {
+      acc[item.size] = [];
+    }
 
     acc[item.size].push(item);
 
     return acc;
   }, {});
 
+  // SORT ITEMS WITHIN EACH GROUP BY CUSTOM ORDER
+  Object.keys(grouped).forEach((size) => {
+    grouped[size].sort(
+      (a: any, b: any) =>
+        (a.order ?? 0) - (b.order ?? 0)
+    );
+  });
+
+  // SORT THE SIZE GROUPS BY THEIR GROUP ORDER
+  const sortedSizes = Object.keys(grouped).sort((a, b) => {
+    const orderA = grouped[a][0]?.sizeOrder ?? 0;
+    const orderB = grouped[b][0]?.sizeOrder ?? 0;
+
+    return orderA - orderB;
+  });
+
   return (
     <div style={{ padding: 20, minHeight: "100vh" }}>
+
       {/* HEADER */}
-<h1
-  onClick={() => router.push("/")}
-  style={{
-    textAlign: "center",
-    fontSize: 40,
-    fontWeight: "bold",
-    color: "black",
-    cursor: "pointer",
-    userSelect: "none",
-  }}
->
-  Bashan Volunteer Fire Department
-</h1>
+      <h1
+        onClick={() => router.push("/")}
+        style={{
+          textAlign: "center",
+          fontSize: 40,
+          fontWeight: "bold",
+          color: "black",
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+      >
+        Bashan Volunteer Fire Department
+      </h1>
+
       <h2
         style={{
           textAlign: "center",
-          fontSize: 28
+          fontSize: 28,
         }}
       >
         {new Date().getFullYear()} Ice Cream Social
@@ -100,27 +120,29 @@ export default function IceCreamPage() {
             "repeat(auto-fit, minmax(400px, 1fr))",
           gap: 20,
           marginTop: 20,
-          alignItems: "stretch"
+          alignItems: "stretch",
         }}
       >
+
         {/* LEFT COLUMN */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
           }}
         >
           <div
             style={{
               width: "100%",
-              maxWidth: 800
+              maxWidth: 800,
             }}
           >
+
             <h2
               style={{
                 textAlign: "center",
-                fontSize: 30
+                fontSize: 30,
               }}
             >
               🍦 Menu
@@ -132,10 +154,11 @@ export default function IceCreamPage() {
                 display: "grid",
                 gridTemplateColumns:
                   "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: 15
+                gap: 15,
               }}
             >
-              {Object.keys(grouped).map((size) => (
+
+              {sortedSizes.map((size) => (
                 <div
                   key={size}
                   style={{
@@ -143,18 +166,17 @@ export default function IceCreamPage() {
                     padding: 15,
                     borderRadius: 10,
                     background: "#fafafa",
-                    textAlign: "center"
+                    textAlign: "center",
                   }}
                 >
+
                   <h3
                     style={{
-                      fontSize: 22
+                      fontSize: 22,
                     }}
                   >
                     {size} - $
-                    {grouped[size][0]?.price?.toFixed(
-                      2
-                    )}
+                    {grouped[size][0]?.price?.toFixed(2)}
                   </h3>
 
                   {grouped[size].map((item: any) => (
@@ -166,7 +188,7 @@ export default function IceCreamPage() {
                         color:
                           item.quantity === 0
                             ? "red"
-                            : "black"
+                            : "black",
                       }}
                     >
                       {item.name} —{" "}
@@ -175,8 +197,10 @@ export default function IceCreamPage() {
                         : item.quantity}
                     </div>
                   ))}
+
                 </div>
               ))}
+
             </div>
           </div>
         </div>
@@ -191,14 +215,13 @@ export default function IceCreamPage() {
                 height: "500px",
                 objectFit: "cover",
                 objectPosition: "center",
-                borderRadius: 10
+                borderRadius: 10,
               }}
             />
           )}
         </div>
+
       </div>
-
-
     </div>
   );
 }
