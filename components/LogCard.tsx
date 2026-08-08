@@ -1,5 +1,6 @@
 'use client'
 
+import { usePermissions } from "@/components/auth/PermissionProvider";
 import { useState } from 'react'
 
 type Status = "X" | "Pass" | "Fail"
@@ -13,6 +14,8 @@ export default function LogCard({
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [crewOpen, setCrewOpen] = useState(false)
+
+  const { can } = usePermissions();
 
   // 🖨 Individual print state
   const [printing, setPrinting] = useState(false)
@@ -117,6 +120,7 @@ style={{
               : "View"}
           </button>
 
+	  {can("truck_checks_edit") && (
           <button className="btn btn-secondary"
             onClick={() => {
               setEditing(true)
@@ -132,8 +136,10 @@ style={{
           >
             Edit
           </button>
+	  )}
 
-          {onDelete && (
+          {onDelete && can("truck_checks_delete") && (
+
             <button className="btn btn-primary"
               onClick={() =>
                 onDelete(log.id)

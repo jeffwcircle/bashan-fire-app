@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
 
 import ModuleCard from "@/components/ui/ModuleCard";
 import AuthDialog from "@/components/auth/AuthDialog";
@@ -34,13 +33,24 @@ export default function ModuleTile({
 
   /*
    * Public modules are always available.
-   * Everything else is checked against RBAC.
+   *
+   * All other modules are controlled by
+   * the RBAC permission system.
    */
   const allowed =
     permission === "public"
       ? true
       : !loading && can(permission);
 
+  /*
+   * Handle module click.
+   *
+   * If the user has permission:
+   *   → Open the module.
+   *
+   * If the user does not have permission:
+   *   → Show the login dialog.
+   */
   function handleClick() {
     if (!allowed) {
       setShowDialog(true);
@@ -51,8 +61,9 @@ export default function ModuleTile({
   }
 
   /*
-   * While permissions are loading, don't
-   * accidentally show a module as available.
+   * Show the lock while permissions are
+   * loading or when the user doesn't have
+   * the required permission.
    */
   const isLocked =
     permission !== "public" && !allowed;
@@ -74,6 +85,8 @@ export default function ModuleTile({
           }
         />
       </div>
+
+      {/* LOGIN DIALOG */}
 
       <AuthDialog
         open={showDialog}

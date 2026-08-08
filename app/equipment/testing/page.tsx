@@ -1,5 +1,6 @@
 "use client";
 
+import RequirePermission from "@/components/auth/RequirePermission";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 
@@ -267,6 +268,7 @@ export default function EquipmentTestingPage() {
     });
 
   return (
+ <RequirePermission permission="equipment">
 <PageContainer
   title="Equipment Testing"
   subtitle="Perform equipment inspections and record testing results."
@@ -773,5 +775,6 @@ style={{
         }
       `}</style>
     </PageContainer>
+  </RequirePermission>
   );
 }
