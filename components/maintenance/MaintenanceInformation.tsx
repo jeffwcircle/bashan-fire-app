@@ -1,5 +1,7 @@
 "use client";
 
+import { usePermissions } from "@/components/auth/PermissionProvider";
+
 import { useEffect, useState } from "react";
 import { Timestamp } from "firebase/firestore";
 
@@ -21,6 +23,8 @@ export default function MaintenanceInformation({
 }: Props) {
   const [editing, setEditing] =
     useState(false);
+
+  const { can } = usePermissions();
 
   const [currentItem, setCurrentItem] =
     useState(item);
@@ -139,6 +143,7 @@ export default function MaintenanceInformation({
           Maintenance Information
         </h2>
 
+	{can("maintenance_edit") && (
         <button
           className="btn btn-primary"
           onClick={() =>
@@ -147,8 +152,9 @@ export default function MaintenanceInformation({
         >
           ✏️ Edit
         </button>
-      </div>
+      )}
 
+      </div>
       <div
         style={{
           display: "grid",
@@ -228,12 +234,15 @@ export default function MaintenanceInformation({
           marginTop: 24,
         }}
       >
+
+	{can("maintenance_edit") && (
         <button
           className="btn btn-danger"
           onClick={retireItem}
         >
           🗑️ Retire Item
         </button>
+        )}
       </div>
     </div>
   );

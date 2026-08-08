@@ -2,12 +2,15 @@
 
 import { useRouter } from "next/navigation";
 
+import { usePermissions } from "@/components/auth/PermissionProvider";
 import RequirePermission from "@/components/auth/RequirePermission";
 import { useProfile } from "@/components/auth/ProfileProvider";
 
 export default function AdminHome() {
   const router = useRouter();
   const { profile } = useProfile();
+
+  const { can } = usePermissions();
 
   const cardStyle = {
     padding: 20,
@@ -37,6 +40,7 @@ export default function AdminHome() {
           <strong>{profile?.role}</strong>.
         </p>
 
+	{can("members") && (
         <div
           style={cardStyle}
           onClick={() =>
@@ -45,6 +49,19 @@ export default function AdminHome() {
         >
           👥 Member Management
         </div>
+	)}
+
+
+	{can("administration_permissions") && (
+	<div
+	  style={cardStyle}
+	  onClick={() =>
+	    router.push("/admin/permissions")
+	  }
+	>
+	  🔐 Permission Management
+	</div>
+        )}
 
         <div
           style={cardStyle}
