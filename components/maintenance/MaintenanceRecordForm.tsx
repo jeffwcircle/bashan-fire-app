@@ -43,6 +43,34 @@ export default function MaintenanceRecordForm({
     }));
   }
 
+  function handleSave() {
+    // Build a clean record so Firebase never receives
+    // undefined values.
+    const cleanRecord: MaintenanceRecord = {
+      performedDate: record.performedDate,
+      performedBy: record.performedBy,
+      vendor: record.vendor,
+      notes: record.notes,
+    };
+
+    // Only add hours if a value was entered.
+    if (record.hours !== undefined) {
+      cleanRecord.hours = record.hours;
+    }
+
+    // Only add mileage if a value was entered.
+    if (record.mileage !== undefined) {
+      cleanRecord.mileage = record.mileage;
+    }
+
+    // Only add cost if a value was entered.
+    if (record.cost !== undefined) {
+      cleanRecord.cost = record.cost;
+    }
+
+    onSave(cleanRecord);
+  }
+
   return (
     <div className="card">
       <h2>Add Maintenance Record</h2>
@@ -176,7 +204,7 @@ export default function MaintenanceRecordForm({
       >
         <button
           className="btn btn-primary"
-          onClick={() => onSave(record)}
+          onClick={handleSave}
         >
           💾 Save
         </button>
