@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -10,6 +11,7 @@ import {
   Settings,
   CalendarDays,
   Gauge,
+  FileBarChart,
 } from "lucide-react";
 
 import ModuleTile from "@/components/dashboard/ModuleTile";
@@ -136,19 +138,19 @@ export default function DashboardModules() {
           }
         />
 
-<ModuleTile
-  title="Events"
-  description="Department meetings and activities"
-  href="/events"
-  permission="events"
-  color="#2563eb"
-  icon={
-    <CalendarDays
-      size={42}
-      color="#2563eb"
-    />
-  }
-/>
+        <ModuleTile
+          title="Events"
+          description="Department meetings and activities"
+          href="/events"
+          permission="events"
+          color="#2563eb"
+          icon={
+            <CalendarDays
+              size={42}
+              color="#2563eb"
+            />
+          }
+        />
 
         <ModuleTile
           title="Firefighter Status"
@@ -174,6 +176,20 @@ export default function DashboardModules() {
             <IceCreamCone
               size={42}
               color="#ec4899"
+            />
+          }
+        />
+
+        <ModuleTile
+          title="Reports"
+          description="Create, filter, and export department reports"
+          href="/reports"
+          permission="administration"
+          color="#0d9488"
+          icon={
+            <FileBarChart
+              size={42}
+              color="#0d9488"
             />
           }
         />
