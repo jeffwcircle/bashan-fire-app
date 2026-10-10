@@ -1,6 +1,5 @@
 'use client'
 
-import { usePermissions } from "@/components/auth/PermissionProvider";
 import { useState } from 'react'
 
 type Status = "X" | "Pass" | "Fail"
@@ -9,13 +8,12 @@ export default function LogCard({
   log,
   onDelete,
   onSaveEdit,
+  onEdit,
   forcePrint = false
 }: any) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [crewOpen, setCrewOpen] = useState(false)
-
-  const { can } = usePermissions();
 
   // 🖨 Individual print state
   const [printing, setPrinting] = useState(false)
@@ -57,14 +55,14 @@ export default function LogCard({
     <div
       id={`log-${log.id}`}
       className={`log-card ${printing ? "print-single" : ""}`}
-style={{
-  background: "#ffffff",
-  borderRadius: 18,
-  border: "1px solid #dbe3eb",
-  boxShadow: "0 8px 20px rgba(0,0,0,.08)",
-  padding: 22,
-  marginBottom: 24
-}}    >
+      style={{
+        border: "1px solid #ccc",
+        padding: 12,
+        borderRadius: 8,
+        background: "white",
+        marginBottom: 15
+      }}
+    >
       {/* HEADER */}
       <div
         style={{
@@ -76,21 +74,14 @@ style={{
         }}
       >
         <div>
-<div
-  style={{
-    fontSize: 24,
-    fontWeight: 700,
-    color: "#991b1b"
-  }}
->
-  🚒 {log.truck || "Log"}
-</div>
+          <strong>
+            {log.truck || "Log"}
+          </strong>
+
           <div
             style={{
-fontSize: 14,
-fontWeight: 500,
-color: "#6b7280",
-marginTop: 6
+              fontSize: 12,
+              color: "#666"
             }}
           >
             {log.createdAt &&
@@ -102,13 +93,13 @@ marginTop: 6
 
         <div
           className="no-print"
-style={{
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-  alignItems: "center"
-}}        >
-          <button className="btn btn-secondary"
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap"
+          }}
+        >
+          <button
             onClick={() =>
               setExpanded(
                 !expanded
@@ -120,9 +111,13 @@ style={{
               : "View"}
           </button>
 
-	  {can("truck_checks_edit") && (
-          <button className="btn btn-secondary"
+          <button
             onClick={() => {
+              if (onEdit) {
+                onEdit(log)
+                return
+              }
+
               setEditing(true)
 
               setEditData(
@@ -136,11 +131,9 @@ style={{
           >
             Edit
           </button>
-	  )}
 
-          {onDelete && can("truck_checks_delete") && (
-
-            <button className="btn btn-primary"
+          {onDelete && (
+            <button
               onClick={() =>
                 onDelete(log.id)
               }
@@ -200,17 +193,10 @@ onClick={() => {
                     marginBottom: 10
                   }}
                 >
-<div
-  style={{
-    marginTop:20,
-    marginBottom:10,
-    fontWeight:700,
-    fontSize:18,
-    color:"#1f2937"
-  }}
->
-  📦 {bay.name}
-</div>
+                  <strong>
+                    {bay.name}
+                  </strong>
+
                   {bay.items.map(
                     (
                       item: any,
@@ -223,10 +209,10 @@ onClick={() => {
                             "flex",
                           justifyContent:
                             "space-between",
-borderBottom:
-  "1px solid #edf2f7",
+                          borderBottom:
+                            "1px solid #eee",
                           padding:
-                            "10px 0"
+                            "4px 0"
                         }}
                       >
                         <span>
@@ -237,12 +223,14 @@ borderBottom:
 
                         <span
                           style={{
-color:
-  item.status === "Pass"
-    ? "#16a34a"
-    : item.status === "Fail"
-    ? "#dc2626"
-    : "#6b7280", 
+                            color:
+                              item.status ===
+                              "Pass"
+                                ? "green"
+                                : item.status ===
+                                  "Fail"
+                                ? "red"
+                                : "#777",
                             fontWeight:
                               "bold"
                           }}
@@ -324,16 +312,11 @@ color:
 
             {/* 📝 Notes */}
             {log.notes && (
-<div
-  className="card"
-  style={{
-    marginTop:20,
-    background:"#fafafa",
-    fontStyle:"italic"
-  }}
->
-  {log.notes}
-</div>
+              <p>
+                <i>
+                  {log.notes}
+                </i>
+              </p>
             )}
 
             {/* 👥 Crew */}
@@ -413,9 +396,8 @@ color:
                         }
                       </span>
 
-<button
-  className="btn btn-success"
-  onClick={() => 
+                      <button
+                        onClick={() =>
                           toggleItem(
                             bIndex,
                             iIndex
@@ -603,10 +585,11 @@ color:
               Save
             </button>
 
-<button
-  className="btn btn-secondary"
-  onClick={() =>
-    setEditing(false)
+            <button
+              onClick={() =>
+                setEditing(
+                  false
+                )
               }
               style={{
                 marginLeft: 10

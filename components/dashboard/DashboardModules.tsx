@@ -9,6 +9,7 @@ import {
   IceCreamCone,
   Settings,
   CalendarDays,
+  Gauge,
 } from "lucide-react";
 
 import ModuleTile from "@/components/dashboard/ModuleTile";
@@ -103,6 +104,20 @@ export default function DashboardModules() {
             <Wrench
               size={42}
               color={theme.colors.maintenance}
+            />
+          }
+        />
+
+        <ModuleTile
+          title="Truck Mileage"
+          description="Vehicle mileage records"
+          href="/mileage"
+          permission="maintenance"
+          color={theme.colors.truck}
+          icon={
+            <Gauge
+              size={42}
+              color={theme.colors.truck}
             />
           }
         />

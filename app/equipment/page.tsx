@@ -2,100 +2,60 @@
 
 import { useRouter } from "next/navigation";
 
-import RequirePermission from "@/components/auth/RequirePermission";
 import PageContainer from "@/components/PageContainer";
 
 export default function EquipmentPage() {
   const router = useRouter();
 
   return (
-    <RequirePermission permission="equipment">
-      <PageContainer
-        title="Equipment"
-        subtitle="Manage department equipment and testing."
+    <PageContainer
+      title="Equipment"
+      subtitle="Manage department equipment and testing."
+    >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 12,
+          marginTop: 20,
+        }}
       >
-        <div
+        <button
+          className="btn btn-secondary"
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(320px,1fr))",
-            gap: 24,
-            marginTop: 20,
+            padding: "10px 18px",
           }}
+          onClick={() =>
+            router.push("/equipment/inventory")
+          }
         >
-          {/* Inventory */}
+          📦 Equipment Inventory
+        </button>
 
-          <div
-            className="card"
-            style={{
-              cursor: "pointer",
-              padding: 32,
-            }}
-            onClick={() =>
-              router.push("/equipment/inventory")
-            }
-          >
-            <div
-              style={{
-                fontSize: 48,
-                marginBottom: 16,
-              }}
-            >
-              📦
-            </div>
+        <button
+          className="btn btn-secondary"
+          style={{
+            padding: "10px 18px",
+          }}
+          onClick={() =>
+            router.push("/equipment/testing")
+          }
+        >
+          🧪 Equipment Testing
+        </button>
 
-            <h2
-              style={{
-                marginTop: 0,
-              }}
-            >
-              Equipment Inventory
-            </h2>
-
-            <p>
-              Manage equipment, assignments,
-              inspection schedules and
-              inventory.
-            </p>
-          </div>
-
-          {/* Testing */}
-
-          <div
-            className="card"
-            style={{
-              cursor: "pointer",
-              padding: 32,
-            }}
-            onClick={() =>
-              router.push("/equipment/testing")
-            }
-          >
-            <div
-              style={{
-                fontSize: 48,
-                marginBottom: 16,
-              }}
-            >
-              🧪
-            </div>
-
-            <h2
-              style={{
-                marginTop: 0,
-              }}
-            >
-              Equipment Testing
-            </h2>
-
-            <p>
-              Perform inspections using your
-              testing templates and record
-              results.
-            </p>
-          </div>
-        </div>
-      </PageContainer>
-    </RequirePermission>
+        <button
+          className="btn btn-secondary"
+          style={{
+            padding: "10px 18px",
+          }}
+          onClick={() =>
+            router.push("/equipment/procedures")
+          }
+        >
+          📋 Equipment Procedures
+        </button>
+      </div>
+    </PageContainer>
   );
 }

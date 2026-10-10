@@ -14,6 +14,7 @@ import { EquipmentInspection } from "@/lib/types/equipmentInspection";
 
 import EquipmentInformation from "./EquipmentInformation";
 import InspectionHistory from "./InspectionHistory";
+import EquipmentProcedureAssignments from "./EquipmentProcedureAssignments";
 
 export default function EquipmentDetails() {
   const { id } = useParams();
@@ -25,8 +26,7 @@ export default function EquipmentDetails() {
   const [latestInspection, setLatestInspection] =
     useState<EquipmentInspection | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadEquipment();
@@ -102,6 +102,10 @@ export default function EquipmentDetails() {
         latestInspection={latestInspection}
         onSave={handleSave}
         onRetire={handleRetire}
+      />
+
+      <EquipmentProcedureAssignments
+        equipment={equipment}
       />
 
       <InspectionHistory

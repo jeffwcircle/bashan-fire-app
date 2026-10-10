@@ -13,6 +13,7 @@ import {
   BookOpen,
   Users,
   Settings,
+  Gauge,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -37,6 +38,12 @@ const menu = [
     href: "/maintenance",
     icon: Wrench,
     color: theme.colors.maintenance,
+  },
+  {
+    name: "Truck Mileage",
+    href: "/mileage",
+    icon: Gauge,
+    color: theme.colors.truck,
   },
   {
     name: "Equipment",
