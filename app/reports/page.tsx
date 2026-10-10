@@ -391,7 +391,7 @@ export default function ReportsPage() {
 
       try {
         const snapshot = await getDocs(
-          collection(db, selected.collection)
+          collection(db, selectedSource)
         );
 
         if (!cancelled) {
