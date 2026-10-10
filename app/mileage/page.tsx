@@ -16,6 +16,7 @@ import {
 
 import { db } from "@/lib/firebase";
 import PageContainer from "@/components/PageContainer";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 interface Truck {
   id: string;
@@ -205,7 +206,8 @@ export default function TruckMileagePage() {
   }
 
   return (
-    <PageContainer title="Truck Mileage">
+    <RequirePermission permission="mileage">
+      <PageContainer title="Truck Mileage">
       <button
         className="btn btn-secondary"
         style={{ marginBottom: 24 }}
@@ -532,6 +534,7 @@ export default function TruckMileagePage() {
           </div>
         </div>
       )}
-    </PageContainer>
+      </PageContainer>
+    </RequirePermission>
   );
 }

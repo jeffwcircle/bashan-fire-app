@@ -8,6 +8,7 @@ import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
 import PageContainer from "@/components/PageContainer";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 const dataSources = [
   { label: "Truck Check Logs", database: "Firestore", collection: "truckLogs" },
@@ -516,7 +517,8 @@ export default function ReportsPage() {
   };
 
   return (
-    <PageContainer>
+    <RequirePermission permission="reports">
+      <PageContainer>
       <div style={{ marginBottom: 24 }}>
         <button
           onClick={() => router.push("/")}
@@ -1083,6 +1085,7 @@ export default function ReportsPage() {
           </div>
         )}
       </section>
-    </PageContainer>
+      </PageContainer>
+    </RequirePermission>
   );
 }

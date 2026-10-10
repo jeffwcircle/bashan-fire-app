@@ -114,7 +114,7 @@ export default function DashboardModules() {
           title="Truck Mileage"
           description="Vehicle mileage records"
           href="/mileage"
-          permission="maintenance"
+          permission="mileage"
           color={theme.colors.truck}
           icon={
             <Gauge
@@ -184,7 +184,7 @@ export default function DashboardModules() {
           title="Reports"
           description="Create, filter, and export department reports"
           href="/reports"
-          permission="administration"
+          permission="reports"
           color="#0d9488"
           icon={
             <FileBarChart
