@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -8,31 +9,76 @@ import { theme } from "@/lib/theme";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const loginValue = usernameOrEmail.trim();
 
-    setLoading(false);
+      if (loginValue.includes("@")) {
+        // Preserve existing email-and-password login.
+        const { error: loginError } =
+          await supabase.auth.signInWithPassword({
+            email: loginValue,
+            password,
+          });
 
-    if (error) {
-      setError(error.message);
-      return;
+        if (loginError) {
+          setError("Invalid username/email or password.");
+          return;
+        }
+      } else {
+        // Resolve the username securely on the server.
+        const response = await fetch("/api/auth/login-username", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: loginValue,
+            password,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setError(
+            result.error || "Invalid username or password."
+          );
+          return;
+        }
+
+        // Establish the returned Supabase session in this browser.
+        const { error: sessionError } =
+          await supabase.auth.setSession({
+            access_token: result.access_token,
+            refresh_token: result.refresh_token,
+          });
+
+        if (sessionError) {
+          console.error("Session setup failed:", sessionError);
+          setError("Unable to complete sign-in. Please try again.");
+          return;
+        }
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Unable to sign in. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -78,33 +124,53 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: 18 }}>
-            <label>Email</label>
-
+            <label htmlFor="usernameOrEmail">
+              Username or Email
+            </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
+              id="usernameOrEmail"
+              type="text"
+              value={usernameOrEmail}
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
+              autoComplete="username"
+              placeholder="Enter your username or email"
               required
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: 12,
+                marginTop: 6,
+                borderRadius: 8,
+                border: "1px solid #d1d5db",
+                fontSize: 16,
+              }}
             />
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label>Password</label>
-
+            <label htmlFor="password">Password</label>
             <input
+              id="password"
               type="password"
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: 12,
+                marginTop: 6,
+                borderRadius: 8,
+                border: "1px solid #d1d5db",
+                fontSize: 16,
+              }}
             />
           </div>
 
           {error && (
             <div
+              role="alert"
               style={{
                 color: "red",
                 marginBottom: 16,
@@ -117,6 +183,7 @@ export default function LoginPage() {
           <button
             type="submit"
             className="btn btn-primary"
+            disabled={loading}
             style={{
               width: "100%",
               height: 48,

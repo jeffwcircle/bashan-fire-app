@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 export interface MemberFormValues {
   first_name: string;
   last_name: string;
+  username?: string;
   email: string;
   password: string;
   role: string;
@@ -23,15 +25,14 @@ interface Props {
   initialValues?: MemberFormValues;
   saving?: boolean;
   submitText?: string;
-  onSubmit: (
-    values: MemberFormValues
-  ) => Promise<void>;
+  onSubmit: (values: MemberFormValues) => Promise<void>;
   onCancel: () => void;
 }
 
 const emptyValues: MemberFormValues = {
   first_name: "",
   last_name: "",
+  username: "",
   email: "",
   password: "",
   role: "Member",
@@ -39,30 +40,33 @@ const emptyValues: MemberFormValues = {
   is_firefighter: true,
 };
 
+const inputStyle = {
+  width: "100%",
+  boxSizing: "border-box" as const,
+  padding: "12px",
+  marginTop: "6px",
+  borderRadius: "8px",
+  border: "1px solid #d1d5db",
+  fontSize: "16px",
+} as const;
+
 export default function MemberForm({
-  initialValues = emptyValues,
+  initialValues,
   saving = false,
   submitText = "Save Member",
   onSubmit,
   onCancel,
 }: Props) {
-  const [values, setValues] =
-    useState<MemberFormValues>(
-      initialValues
-    );
+  const [values, setValues] = useState<MemberFormValues>(
+    initialValues ?? emptyValues
+  );
 
-  const [roles, setRoles] =
-    useState<Role[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
+  const [roleError, setRoleError] = useState<string | null>(null);
 
-  const [loadingRoles, setLoadingRoles] =
-    useState(true);
-
-  const [roleError, setRoleError] =
-    useState<string | null>(null);
-
-  // --------------------------------------------------
-  // LOAD ROLES FROM DATABASE
-  // --------------------------------------------------
+  const creatingMember =
+    initialValues === undefined || submitText === "Create Member";
 
   useEffect(() => {
     loadRoles();
@@ -73,51 +77,29 @@ export default function MemberForm({
       setLoadingRoles(true);
       setRoleError(null);
 
-      const {
-        data,
-        error,
-      } = await supabase
+      const { data, error } = await supabase
         .from("roles")
-        .select(
-          "id, name, description"
-        )
-        .order("id", {
-          ascending: true,
-        });
+        .select("id, name, description")
+        .order("id", { ascending: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setRoles(
-        (data || []) as Role[]
-      );
-    } catch (err: any) {
-      console.error(
-        "Error loading roles:",
-        err
-      );
-
+      setRoles((data || []) as Role[]);
+    } catch (err: unknown) {
+      console.error("Error loading roles:", err);
       setRoleError(
-        err?.message ||
-          "Unable to load roles."
+        err instanceof Error ? err.message : "Unable to load roles."
       );
     } finally {
       setLoadingRoles(false);
     }
   }
 
-  // --------------------------------------------------
-  // UPDATE FORM VALUES
-  // --------------------------------------------------
-
   useEffect(() => {
-    setValues(initialValues);
+    setValues(initialValues ?? emptyValues);
   }, [initialValues]);
 
-  function update<
-    K extends keyof MemberFormValues
-  >(
+  function update<K extends keyof MemberFormValues>(
     field: K,
     value: MemberFormValues[K]
   ) {
@@ -127,174 +109,156 @@ export default function MemberForm({
     }));
   }
 
-  // --------------------------------------------------
-  // SUBMIT
-  // --------------------------------------------------
-
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!values.first_name.trim()) {
-      alert(
-        "First name is required."
-      );
+      alert("First name is required.");
       return;
     }
 
     if (!values.last_name.trim()) {
-      alert(
-        "Last name is required."
-      );
+      alert("Last name is required.");
+      return;
+    }
+
+    if (creatingMember && !values.username?.trim()) {
+      alert("Username is required.");
       return;
     }
 
     if (!values.email.trim()) {
-      alert(
-        "Email is required."
-      );
+      alert("Email is required.");
       return;
     }
 
-    if (
-      submitText ===
-        "Create Member" &&
-      !values.password.trim()
-    ) {
-      alert(
-        "Temporary password is required."
-      );
+    if (creatingMember && !values.password.trim()) {
+      alert("Temporary password is required.");
+      return;
+    }
+
+    if (values.password && values.password.length < 6) {
+      alert("Password must be at least 6 characters.");
       return;
     }
 
     if (!values.role) {
-      alert(
-        "Please select a role."
-      );
+      alert("Please select a role.");
       return;
     }
 
-    await onSubmit(values);
+    await onSubmit({
+      ...values,
+      username: values.username?.trim().toLowerCase() || "",
+      email: values.email.trim(),
+    });
   }
-
-  // --------------------------------------------------
-  // PAGE
-  // --------------------------------------------------
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        maxWidth: 700,
-        display: "grid",
-        gap: 20,
-      }}
+      style={{ maxWidth: 700, display: "grid", gap: 20 }}
     >
-      {/* FIRST NAME */}
-
       <div>
-        <label>
-          First Name
-        </label>
-
+        <label>First Name</label>
         <input
-          value={
-            values.first_name
-          }
-          onChange={(e) =>
-            update(
-              "first_name",
-              e.target.value
-            )
-          }
+          value={values.first_name}
+          onChange={(e) => update("first_name", e.target.value)}
           style={inputStyle}
+          autoComplete="given-name"
+          required
         />
       </div>
 
-      {/* LAST NAME */}
-
       <div>
-        <label>
-          Last Name
-        </label>
-
+        <label>Last Name</label>
         <input
-          value={
-            values.last_name
-          }
-          onChange={(e) =>
-            update(
-              "last_name",
-              e.target.value
-            )
-          }
+          value={values.last_name}
+          onChange={(e) => update("last_name", e.target.value)}
           style={inputStyle}
+          autoComplete="family-name"
+          required
         />
       </div>
 
-      {/* EMAIL */}
+      <div>
+        <label>Username</label>
+        <input
+          type="text"
+          value={values.username ?? ""}
+          onChange={(e) => update("username", e.target.value)}
+          style={inputStyle}
+          autoComplete="off"
+          minLength={3}
+          maxLength={30}
+          pattern="[A-Za-z0-9._-]+"
+          title="Use 3–30 letters, numbers, periods, underscores, or hyphens."
+          placeholder="e.g. engine71"
+          required={creatingMember}
+        />
+        <small style={{ color: "#666" }}>
+          Used to sign in. Letters, numbers, periods, underscores, and hyphens only.
+        </small>
+      </div>
 
       <div>
-        <label>
-          Email
-        </label>
-
+        <label>Email</label>
         <input
           type="email"
-          value={
-            values.email
-          }
-          onChange={(e) =>
-            update(
-              "email",
-              e.target.value
-            )
-          }
+          value={values.email}
+          onChange={(e) => update("email", e.target.value)}
           style={inputStyle}
+          autoComplete="email"
+          required
         />
       </div>
 
-      {/* PASSWORD */}
+      {creatingMember ? (
+        <div>
+          <label>Temporary Password</label>
+          <input
+            type="password"
+            value={values.password}
+            onChange={(e) => update("password", e.target.value)}
+            style={inputStyle}
+            autoComplete="new-password"
+            minLength={6}
+            required
+          />
+          <small style={{ color: "#666" }}>
+            Set the initial password for this new member.
+          </small>
+        </div>
+      ) : (
+        <div>
+          <label>New Password (optional)</label>
+          <input
+            type="password"
+            value={values.password}
+            onChange={(e) => update("password", e.target.value)}
+            style={inputStyle}
+            autoComplete="new-password"
+            minLength={6}
+            placeholder="Leave blank to keep the current password"
+          />
+          <small style={{ color: "#666" }}>
+            Leave blank if you do not want to change this member's password.
+          </small>
+        </div>
+      )}
 
       <div>
-        <label>
-          Temporary Password
-        </label>
-
-        <input
-          type="password"
-          value={
-            values.password
-          }
-          onChange={(e) =>
-            update(
-              "password",
-              e.target.value
-            )
-          }
-          style={inputStyle}
-        />
-      </div>
-
-      {/* ROLE */}
-
-      <div>
-        <label>
-          Role
-        </label>
+        <label>Role</label>
 
         {loadingRoles ? (
           <div
             style={{
               marginTop: 6,
               padding: 12,
-              border:
-                "1px solid #d1d5db",
+              border: "1px solid #d1d5db",
               borderRadius: 8,
               color: "#666",
-              background:
-                "#f9fafb",
+              background: "#f9fafb",
             }}
           >
             Loading roles...
@@ -304,71 +268,39 @@ export default function MemberForm({
             style={{
               marginTop: 6,
               padding: 12,
-              border:
-                "1px solid #fca5a5",
+              border: "1px solid #fca5a5",
               borderRadius: 8,
               color: "#b91c1c",
-              background:
-                "#fef2f2",
+              background: "#fef2f2",
             }}
           >
             Unable to load roles.
-
-            <div
-              style={{
-                fontSize: 13,
-                marginTop: 4,
-              }}
-            >
-              {roleError}
-            </div>
-
+            <div style={{ fontSize: 13, marginTop: 4 }}>{roleError}</div>
             <button
               type="button"
               onClick={loadRoles}
-              style={{
-                marginTop: 8,
-                padding:
-                  "6px 12px",
-                cursor: "pointer",
-              }}
+              style={{ marginTop: 8, padding: "6px 12px", cursor: "pointer" }}
             >
               Try Again
             </button>
           </div>
         ) : (
           <select
-            value={
-              values.role
-            }
-            onChange={(e) =>
-              update(
-                "role",
-                e.target.value
-              )
-            }
+            value={values.role}
+            onChange={(e) => update("role", e.target.value)}
             style={inputStyle}
+            required
           >
-            <option value="">
-              Select a role
-            </option>
-
-            {roles.map(
-              (role) => (
-                <option
-                  key={role.id}
-                  value={role.name}
-                >
-                  {role.name}
-                </option>
-              )
-            )}
+            <option value="">Select a role</option>
+            {roles.map((role) => (
+              <option key={role.id} value={role.name}>
+                {role.name}
+              </option>
+            ))}
           </select>
         )}
       </div>
 
-      {/* ACTIVE */}
-
       <label
         style={{
           display: "flex",
@@ -379,22 +311,12 @@ export default function MemberForm({
       >
         <input
           type="checkbox"
-          checked={
-            values.active
-          }
-          onChange={(e) =>
-            update(
-              "active",
-              e.target.checked
-            )
-          }
+          checked={values.active}
+          onChange={(e) => update("active", e.target.checked)}
         />
-
         Active Member
       </label>
 
-      {/* FIREFIGHTER */}
-
       <label
         style={{
           display: "flex",
@@ -405,48 +327,26 @@ export default function MemberForm({
       >
         <input
           type="checkbox"
-          checked={
-            values.is_firefighter
-          }
-          onChange={(e) =>
-            update(
-              "is_firefighter",
-              e.target.checked
-            )
-          }
+          checked={values.is_firefighter}
+          onChange={(e) => update("is_firefighter", e.target.checked)}
         />
-
-        Firefighter
-        (appears on status
-        board)
+        Firefighter (appears on status board)
       </label>
 
-      {/* BUTTONS */}
-
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-        }}
-      >
+      <div style={{ display: "flex", gap: 12 }}>
         <button
           className="btn btn-primary"
           type="submit"
-          disabled={
-            saving ||
-            loadingRoles ||
-            roles.length === 0
-          }
+          disabled={saving || loadingRoles || roles.length === 0}
         >
-          {saving
-            ? "Saving..."
-            : submitText}
+          {saving ? "Saving..." : submitText}
         </button>
 
         <button
           className="btn btn-secondary"
           type="button"
           onClick={onCancel}
+          disabled={saving}
         >
           Cancel
         </button>
@@ -454,13 +354,3 @@ export default function MemberForm({
     </form>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  marginTop: "6px",
-  borderRadius: "8px",
-  border:
-    "1px solid #d1d5db",
-  fontSize: "16px",
-} as const;
