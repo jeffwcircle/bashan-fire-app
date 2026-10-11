@@ -112,6 +112,11 @@ export default function TruckMileagePage() {
           });
 
         setLogs(data);
+        setStartMileage((current) =>
+          current === "" && data.length > 0
+            ? String(data[0].endMileage ?? "")
+            : current
+        );
       },
       (error) => {
         console.error("Error loading mileage logs:", error);
@@ -122,9 +127,9 @@ export default function TruckMileagePage() {
     return () => unsubscribe();
   }, [selectedTruck]);
 
-  function resetForm() {
+  function resetForm(nextStartingMileage = "") {
     setDate(new Date().toLocaleDateString("en-CA"));
-    setStartMileage("");
+    setStartMileage(nextStartingMileage);
     setEndMileage("");
     setReason("");
     setNotes("");
@@ -173,7 +178,7 @@ export default function TruckMileagePage() {
         createdAt: Timestamp.now(),
       });
 
-      resetForm();
+      resetForm(String(end));
       setShowMore(false);
       alert("Mileage record saved.");
     } catch (error) {
